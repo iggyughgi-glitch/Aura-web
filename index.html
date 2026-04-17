@@ -18,25 +18,22 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body, html { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; height: 100vh; overflow: hidden; background: #FFFFFF; color: #000000; }
         
-        /* Main Viewport */
         .viewport { height: calc(100vh - var(--nav-height)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 30px; transition: filter 0.5s ease; position: relative; }
         .brand-name { font-size: clamp(54px, 15vw, 72px); font-weight: 800; letter-spacing: -2px; margin: 0 0 5px 0; }
         .tagline { font-size: 14px; color: #666; font-weight: 400; letter-spacing: 1px; margin: 0; }
 
-        /* Waitlist Suite */
         .invitation-suite { margin-top: 50px; width: 100%; max-width: 320px; }
         .invite-label { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; color: #000; margin-bottom: 12px; }
         .invite-desc { font-size: 13px; color: #777; line-height: 1.5; margin-bottom: 30px; }
         
         .input-group { position: relative; border-bottom: 1px solid #E0E0E0; padding-bottom: 8px; }
         .invite-input { width: 100%; border: none; outline: none; font-size: 15px; color: #000; background: transparent; padding-right: 80px; }
-        .btn-request { position: absolute; right: 0; bottom: 8px; background: transparent; border: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; cursor: pointer; color: #000; }
+        .btn-request { position: absolute; right: 0; bottom: 8px; background: transparent; border: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; cursor: pointer; color: #000; transition: color 0.3s; }
         
         .live-counter { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .live-counter .count { font-weight: 800; font-size: 13px; color: var(--teal); }
         .live-counter .label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; }
 
-        /* Bottom Nav */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: #0B0B12; display: flex; flex-direction: column; justify-content: center; padding: 15px 20px 25px; z-index: 3000; border-top-left-radius: 30px; border-top-right-radius: 30px; }
         .utility-tabs { display: flex; gap: 20px; padding-bottom: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
         .utility-tabs::-webkit-scrollbar { display: none; }
@@ -45,21 +42,26 @@
         
         .search-row { display: flex; width: 100%; align-items: center; }
         .ai-search-field { flex: 1; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 25px; padding: 15px 20px; color: var(--muted); font-size: 14px; margin-right: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .diamond-trigger { width: 56px; height: 56px; background: #0B0B12; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .diamond-trigger { width: 56px; height: 56px; background: #0B0B12; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+        .diamond-trigger:active { transform: scale(0.95); }
 
-        /* Sanctuary Hub Overlay */
         #sanctuary-hub { position: fixed; bottom: -100%; left: 0; right: 0; height: 92%; background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; transition: bottom 0.5s cubic-bezier(0.19, 1, 0.22, 1); z-index: 4000; padding: 45px 25px 30px; overflow-y: auto; color: var(--text-dark); }
         #sanctuary-hub.open { bottom: 0; }
         .drag-indicator { width: 45px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 10px; margin: -15px auto 35px; }
+        
         .feature-tile { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 18px 20px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .feature-text b { display: block; font-size: 16px; color: #fff; margin-bottom: 4px; }
         .feature-text span { font-size: 12px; color: var(--muted); display: block; }
         
-        .toggle { width: 46px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 13px; position: relative; }
-        .knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.4s; }
+        /* Interactive Toggles */
+        .toggle { width: 46px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 13px; position: relative; cursor: pointer; transition: background 0.4s; }
+        .knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
         .toggle.active { background: var(--teal); }
+        .toggle.active.fashion-toggle { background: var(--fashion); }
+        .toggle.active.health-toggle { background: var(--health); }
         .toggle.active .knob { left: 23px; }
-        .btn-return { width: 100%; padding: 20px; background: var(--gold); border: none; border-radius: 20px; font-weight: 800; margin-top: 25px; font-size: 15px; cursor: pointer; }
+        
+        .btn-return { width: 100%; padding: 20px; background: var(--gold); border: none; border-radius: 20px; font-weight: 800; margin-top: 25px; font-size: 15px; cursor: pointer; color: #000; }
     </style>
 </head>
 <body>
@@ -80,7 +82,7 @@
             </form>
 
             <div class="live-counter">
-                <span class="count" id="count-val">1,402</span>
+                <span class="count" id="count-val">...</span>
                 <span class="label">Seeking Sanctuary</span>
             </div>
         </div>
@@ -92,15 +94,15 @@
         
         <div class="feature-tile">
             <div class="feature-text"><b>Anti-Stalking Shield</b><span>Detects unauthorized location tracking.</span></div>
-            <div class="toggle active"><div class="knob"></div></div>
+            <div class="toggle active" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
         <div class="feature-tile" style="border-left: 4px solid var(--fashion);">
             <div class="feature-text"><b>Fashion Vault</b><span>Private, AI-curated aesthetic boards.</span></div>
-            <div class="toggle active" style="background: var(--fashion);"><div class="knob" style="left: 23px;"></div></div>
+            <div class="toggle active fashion-toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
         <div class="feature-tile" style="border-left: 4px solid var(--health);">
             <div class="feature-text"><b>Health Vault</b><span>Encrypted cycle and symptom tracking.</span></div>
-            <div class="toggle active" style="background: var(--health);"><div class="knob" style="left: 23px;"></div></div>
+            <div class="toggle active health-toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
         
         <button class="btn-return" onclick="toggleHub()">RETURN TO AURA</button>
@@ -126,24 +128,54 @@
     </nav>
 
     <script>
-        // --- 1. UI LOGIC ---
+        // --- 1. UI & INTERACTION LOGIC ---
         function toggleHub() {
             const hub = document.getElementById('sanctuary-hub');
             hub.classList.toggle('open');
             document.getElementById('main-view').style.filter = hub.classList.contains('open') ? 'blur(10px) brightness(0.8)' : 'none';
         }
 
-        // --- 2. SUPABASE BACKEND LOGIC (CONNECTED) ---
+        // Make the switches actually interactable
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        // Check if user already signed up on this device
+        window.onload = function() {
+            if(localStorage.getItem('aura_secured') === 'true') {
+                const btn = document.getElementById('submit-btn');
+                const input = document.getElementById('email-input');
+                btn.innerText = "SECURED";
+                btn.style.color = "var(--teal)";
+                input.value = "Access Granted";
+                input.disabled = true;
+            }
+            fetchLiveCount();
+        };
+
+        // --- 2. SUPABASE BACKEND LOGIC ---
         const SUPABASE_URL = 'https://inkvqoerebpxozxwogmj.supabase.co'; 
         const SUPABASE_ANON_KEY = 'Sb_publishable_qIek_iF4CiXAP0_Q21MoAQ_ZmIw7y-o';
-
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Fetch real database count
+        async function fetchLiveCount() {
+            const countVal = document.getElementById('count-val');
+            const { count, error } = await supabase
+                .from('waitlist')
+                .select('*', { count: 'exact', head: true });
+            
+            if (!error && count !== null) {
+                countVal.innerText = count.toLocaleString();
+            } else {
+                countVal.innerText = "0"; // Fallback if no entries yet
+            }
+        }
 
         document.getElementById('invite-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const emailInput = document.getElementById('email-input');
-            const countVal = document.getElementById('count-val');
             
             btn.innerText = "SECURING...";
 
@@ -152,14 +184,13 @@
                 .insert([{ email: emailInput.value }]);
 
             if (error) {
-                // Handle duplicate emails gracefully
                 if (error.code === '23505') {
                     alert("Aura Protocol: You are already on the list.");
                     btn.innerText = "SECURED";
+                    btn.style.color = "var(--teal)";
                     return;
                 }
                 btn.innerText = "ERROR";
-                console.error(error);
                 return;
             }
 
@@ -167,12 +198,10 @@
             btn.innerText = "SECURED";
             btn.style.color = "var(--teal)";
             emailInput.disabled = true;
+            localStorage.setItem('aura_secured', 'true'); // Remember them
             
-            // Visual Momentum Counter
-            let currentCount = parseInt(countVal.innerText.replace(/,/g, ''));
-            countVal.innerText = (currentCount + 1).toLocaleString();
-            
-            alert("Aura Protocol: Welcome to the sanctuary. " + emailInput.value + " has been added.");
+            // Instantly update the real counter
+            fetchLiveCount();
         });
     </script>
 </body>
