@@ -36,16 +36,18 @@
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: #0B0B12; display: flex; flex-direction: column; justify-content: center; padding: 15px 20px 25px; z-index: 3000; border-top-left-radius: 30px; border-top-right-radius: 30px; }
         .utility-tabs { display: flex; gap: 20px; padding-bottom: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
-        .utility-tabs::-webkit-scrollbar { display: none; }
         .tab { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
         .tab.active { color: #FFF; }
         
         .search-row { display: flex; width: 100%; align-items: center; }
         .ai-search-field { flex: 1; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 25px; padding: 15px 20px; color: var(--muted); font-size: 14px; margin-right: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .diamond-trigger { width: 56px; height: 56px; background: #0B0B12; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
-        .diamond-trigger:active { transform: scale(0.95); }
+        
+        /* DIAMOND BUTTON - Z-INDEX FIX */
+        .diamond-trigger { width: 56px; height: 56px; background: #0B0B12; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; z-index: 9999; transition: transform 0.2s; }
+        .diamond-trigger:active { transform: scale(0.9); }
 
-        #sanctuary-hub { position: fixed; bottom: -100%; left: 0; right: 0; height: 92%; background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; transition: bottom 0.5s cubic-bezier(0.19, 1, 0.22, 1); z-index: 4000; padding: 45px 25px 30px; overflow-y: auto; color: var(--text-dark); }
+        /* THE HUB PANEL */
+        #sanctuary-hub { position: fixed; bottom: -100%; left: 0; right: 0; height: 92%; background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; transition: bottom 0.5s cubic-bezier(0.19, 1, 0.22, 1); z-index: 5000; padding: 45px 25px 30px; overflow-y: auto; color: var(--text-dark); }
         #sanctuary-hub.open { bottom: 0; }
         .drag-indicator { width: 45px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 10px; margin: -15px auto 35px; }
         
@@ -55,7 +57,7 @@
         
         /* Interactive Toggles */
         .toggle { width: 46px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 13px; position: relative; cursor: pointer; transition: background 0.4s; }
-        .knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1); }
+        .knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: none; }
         .toggle.active { background: var(--teal); }
         .toggle.active.fashion-toggle { background: var(--fashion); }
         .toggle.active.health-toggle { background: var(--health); }
@@ -90,7 +92,7 @@
 
     <div id="sanctuary-hub">
         <div class="drag-indicator"></div>
-        <p style="color: var(--gold); font-weight: 600; text-align: center; margin-bottom: 30px;">We’re not just AI powered.<br>We’re empowering women.</p>
+        <p style="color: var(--gold); font-weight: 600; text-align: center; margin-bottom: 30px;">Inventory Ready.<br>Your Private Sanctuary.</p>
         
         <div class="feature-tile">
             <div class="feature-text"><b>Anti-Stalking Shield</b><span>Detects unauthorized location tracking.</span></div>
@@ -117,92 +119,82 @@
             <div class="tab" style="color: var(--health);">Health</div>
         </div>
         <div class="search-row">
-            <div class="ai-search-field" onclick="alert('Aura Search will activate at launch. Secure your invitation to be notified.')">
+            <div class="ai-search-field" onclick="alert('Aura Search will activate at launch.')">
                 <span>Ask Aura...</span>
                 <span style="font-size: 11px; color: var(--teal); font-weight: 800;">● AI</span>
             </div>
-            <div class="diamond-trigger" onclick="toggleHub()">
-                <span style="font-size: 26px;">💎</span>
+            <div class="diamond-trigger" id="diamond-btn" onclick="toggleHub()">
+                <span style="font-size: 26px; pointer-events: none;">💎</span>
             </div>
         </div>
     </nav>
 
     <script>
-        // --- 1. UI & INTERACTION LOGIC ---
-        function toggleHub() {
-            const hub = document.getElementById('sanctuary-hub');
-            hub.classList.toggle('open');
-            document.getElementById('main-view').style.filter = hub.classList.contains('open') ? 'blur(10px) brightness(0.8)' : 'none';
-        }
-
-        // Make the switches actually interactable
-        function toggleSwitch(element) {
-            element.classList.toggle('active');
-        }
-
-        // Check if user already signed up on this device
-        window.onload = function() {
-            if(localStorage.getItem('aura_secured') === 'true') {
-                const btn = document.getElementById('submit-btn');
-                const input = document.getElementById('email-input');
-                btn.innerText = "SECURED";
-                btn.style.color = "var(--teal)";
-                input.value = "Access Granted";
-                input.disabled = true;
-            }
-            fetchLiveCount();
-        };
-
-        // --- 2. SUPABASE BACKEND LOGIC ---
+        // --- 1. SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://inkvqoerebpxozxwogmj.supabase.co'; 
         const SUPABASE_ANON_KEY = 'Sb_publishable_qIek_iF4CiXAP0_Q21MoAQ_ZmIw7y-o';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Fetch real database count
+        // --- 2. HUB TOGGLE LOGIC ---
+        function toggleHub() {
+            const hub = document.getElementById('sanctuary-hub');
+            const main = document.getElementById('main-view');
+            hub.classList.toggle('open');
+            
+            if (hub.classList.contains('open')) {
+                main.style.filter = 'blur(10px) brightness(0.8)';
+                main.style.pointerEvents = 'none';
+            } else {
+                main.style.filter = 'none';
+                main.style.pointerEvents = 'auto';
+            }
+        }
+
+        function toggleSwitch(element) {
+            element.classList.toggle('active');
+        }
+
+        // --- 3. DATABASE LOGIC ---
         async function fetchLiveCount() {
             const countVal = document.getElementById('count-val');
-            const { count, error } = await supabase
-                .from('waitlist')
-                .select('*', { count: 'exact', head: true });
-            
-            if (!error && count !== null) {
-                countVal.innerText = count.toLocaleString();
-            } else {
-                countVal.innerText = "0"; // Fallback if no entries yet
-            }
+            try {
+                const { count, error } = await supabase
+                    .from('waitlist')
+                    .select('*', { count: 'exact', head: true });
+                if (!error) countVal.innerText = count.toLocaleString();
+            } catch (e) { countVal.innerText = "0"; }
         }
 
         document.getElementById('invite-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const emailInput = document.getElementById('email-input');
-            
             btn.innerText = "SECURING...";
 
-            const { error } = await supabase
-                .from('waitlist')
-                .insert([{ email: emailInput.value }]);
+            const { error } = await supabase.from('waitlist').insert([{ email: emailInput.value }]);
 
             if (error) {
-                if (error.code === '23505') {
-                    alert("Aura Protocol: You are already on the list.");
-                    btn.innerText = "SECURED";
-                    btn.style.color = "var(--teal)";
-                    return;
-                }
-                btn.innerText = "ERROR";
+                if (error.code === '23505') alert("Aura Protocol: Already Secured.");
+                btn.innerText = "SECURED";
                 return;
             }
 
-            // Success State
             btn.innerText = "SECURED";
             btn.style.color = "var(--teal)";
             emailInput.disabled = true;
-            localStorage.setItem('aura_secured', 'true'); // Remember them
-            
-            // Instantly update the real counter
+            localStorage.setItem('aura_secured', 'true');
             fetchLiveCount();
         });
+
+        window.onload = function() {
+            fetchLiveCount();
+            if(localStorage.getItem('aura_secured') === 'true') {
+                const btn = document.getElementById('submit-btn');
+                btn.innerText = "SECURED";
+                btn.style.color = "var(--teal)";
+                document.getElementById('email-input').disabled = true;
+            }
+        };
     </script>
 </body>
 </html>
