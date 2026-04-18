@@ -44,7 +44,27 @@
         .count-num{font-size:12px;font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums;}
         .count-label{font-size:10px;color:#AAA;text-transform:uppercase;letter-spacing:2px;}
 
-        /* SEARCH VIEW */
+        /* READER VIEW */
+        #reader-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);z-index:600;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;}
+        #reader-view.visible{opacity:1;pointer-events:all;}
+        .reader-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
+        .reader-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;transition:background .2s;}
+        .reader-back:active{background:rgba(0,240,255,.18);}
+        .reader-title-bar{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:1.5px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);}
+        .reader-content{flex:1;overflow-y:auto;padding:24px 20px 40px;-webkit-overflow-scrolling:touch;}
+        .reader-content::-webkit-scrollbar{display:none;}
+        .reader-aura-tag{font-family:'Courier New',monospace;font-size:9px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .reader-aura-tag::before{content:'';width:20px;height:1px;background:var(--teal);}
+        .reader-aura-tag::after{content:'';width:20px;height:1px;background:var(--teal);}
+        .reader-heading{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--white);line-height:1.2;margin-bottom:16px;}
+        .reader-body{font-size:14px;color:#999;line-height:1.8;}
+        .reader-body p{margin-bottom:16px;}
+        .reader-body h2,.reader-body h3{color:#CCC;font-size:16px;font-weight:700;margin:20px 0 8px;}
+        .reader-body a{color:var(--teal);text-decoration:none;}
+        .reader-body ul,.reader-body ol{padding-left:20px;margin-bottom:16px;color:#888;}
+        .reader-body li{margin-bottom:6px;}
+        .reader-body img{display:none;}
+        .reader-loading{margin:auto;font-family:'Courier New',monospace;font-size:13px;color:var(--hud-accent);letter-spacing:3px;animation:blink 1s step-end infinite;}
         #search-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;z-index:500;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;}
         #search-view.visible{opacity:1;pointer-events:all;}
 
@@ -215,6 +235,17 @@
         <div class="hud-query-display" id="hud-query-text">AURA_CORE // SEARCHING...</div>
     </div>
     <div class="cards-viewport" id="cards-viewport"></div>
+</div>
+
+<!-- READER VIEW -->
+<div id="reader-view">
+    <div class="reader-bar">
+        <div class="reader-back" onclick="closeReader()">←</div>
+        <div class="reader-title-bar" id="reader-title-bar">AURA // SECURE READER</div>
+    </div>
+    <div class="reader-content" id="reader-content">
+        <div class="reader-loading">LOADING...</div>
+    </div>
 </div>
 
 <!-- LANDSCAPE ORB -->
@@ -398,7 +429,7 @@ async function runSearch(query) {
                 <div class="card-url">${data.domain}</div>
                 <div class="card-footer">TAP TO ENGAGE →</div>
             `;
-            card.addEventListener('click', () => window.open(data.url, '_blank', 'noopener,noreferrer'));
+            card.addEventListener('click', () => openReader(data));
             cardsViewport.appendChild(card);
         });
         applyParallax();
@@ -431,6 +462,69 @@ function applyParallax() {
 }
 cardsViewport.addEventListener('scroll', applyParallax);
 window.addEventListener('resize', () => { if (searchView.classList.contains('visible')) applyParallax(); });
+
+// ── READER VIEW ──
+const readerView    = document.getElementById('reader-view');
+const readerContent = document.getElementById('reader-content');
+const readerTitleBar = document.getElementById('reader-title-bar');
+
+async function openReader(data) {
+    readerView.classList.add('visible');
+    readerTitleBar.textContent = data.title.toUpperCase();
+    readerContent.innerHTML = '<div class="reader-loading">DECRYPTING...</div>';
+
+    try {
+        // Fetch full Wikipedia article content via API
+        const params = new URLSearchParams({
+            action: 'query',
+            titles: data.title,
+            prop: 'extracts',
+            exintro: '0',
+            explaintext: '0',
+            format: 'json',
+            origin: '*'
+        });
+        const res = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, {
+            signal: AbortSignal.timeout(10000)
+        });
+        const json = await res.json();
+        const pages = json.query.pages;
+        const page = pages[Object.keys(pages)[0]];
+        const html = page.extract || '<p>No content available.</p>';
+
+        // Strip Wikipedia-specific elements, keep clean prose
+        const cleaned = html
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/class="[^"]*"/g, '')
+            .replace(/id="[^"]*"/g, '')
+            .replace(/<table[\s\S]*?<\/table>/gi, '')
+            .replace(/<figure[\s\S]*?<\/figure>/gi, '')
+            .replace(/<img[^>]*>/gi, '')
+            .replace(/<span[^>]*>(.*?)<\/span>/gi, '$1')
+            .replace(/<div[^>]*>/gi, '')
+            .replace(/<\/div>/gi, '')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+
+        readerContent.innerHTML = `
+            <div class="reader-aura-tag">Aura Secure Reader</div>
+            <div class="reader-heading">${data.title}</div>
+            <div class="reader-body">${cleaned}</div>
+        `;
+    } catch(e) {
+        readerContent.innerHTML = `
+            <div class="reader-aura-tag">Aura Secure Reader</div>
+            <div class="reader-heading">${data.title}</div>
+            <div class="reader-body"><p>${data.desc}</p></div>
+        `;
+    }
+}
+
+function closeReader() {
+    readerView.classList.remove('visible');
+    readerContent.scrollTop = 0;
+}
 
 // ── LANDSCAPE ORB ──
 const orbBtn = document.getElementById('orb-btn');
