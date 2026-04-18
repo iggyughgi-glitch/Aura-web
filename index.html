@@ -715,24 +715,26 @@
         const searchInput   = document.getElementById('search-input');
 
         // ─────────────────────────────────────────
-        // 🔌 PLUG IN REAL SEARCH HERE WHEN READY
-        // Just replace the contents of this function.
-        // Return an array of: { id, title, desc, url }
+        // LIVE SEARCH — calls /api/search (server-side proxy)
+        // SearXNG instance URL never exposed to client.
+        // To swap engines later: only change api/search.js
         // ─────────────────────────────────────────
         async function fetchSearchResults(query) {
-            // TODO: swap dummy data for real API call:
-            // const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-            // return await res.json();
-
-            await new Promise(r => setTimeout(r, 600)); // simulate latency
-            return [
-                { id:"01", title:"Target Acquired",  desc:"First node identified in the data stream. Privacy protocols holding steady.", url:"aura://secure/01" },
-                { id:"02", title:"Quantum Routing",  desc:"Bypassing standard trackers. Routing through encrypted proxy networks.", url:"aura://secure/02" },
-                { id:"03", title:"Data Scrubbing",   desc:"Removing 43 ad-trackers from the destination URL. Safe payload ready.", url:"aura://secure/03" },
-                { id:"04", title:"Node Alpha",       desc:"Historical data retrieval complete. Cross-referencing secure databases.", url:"aura://secure/04" },
-                { id:"05", title:"Signal Lost",      desc:"Attempted interference blocked by Aura Shield. Connection re-established.", url:"aura://secure/05" },
-                { id:"06", title:"Telemetry Sync",   desc:"Finalizing data array. UI rendering engine at maximum efficiency.", url:"aura://secure/06" }
-            ];
+            const res = await fetch(
+                `/api/search?q=${encodeURIComponent(query)}`,
+                {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' },
+                    // 10s client-side timeout
+                    signal: AbortSignal.timeout(10000),
+                }
+            );
+            if (!res.ok) throw new Error(`Search error ${res.status}`);
+            const data = await res.json();
+            if (!data.results || data.results.length === 0) {
+                throw new Error('NO_RESULTS');
+            }
+            return data.results; // [{ id, title, desc, url, domain }]
         }
 
         async function runSearch(query) {
@@ -751,18 +753,21 @@
                         <div class="card-telemetry">OBJ_${data.id} // SECURE</div>
                         <div class="card-title">${data.title}</div>
                         <div class="card-body">${data.desc}</div>
-                        <div class="card-url">${data.url}</div>
+                        <div class="card-url">${data.domain || data.url}</div>
                         <div class="card-footer">TAP TO ENGAGE →</div>
                     `;
                     card.addEventListener('click', () => {
-                        // TODO: navigate to result when live
-                        console.log('Open:', data.url);
+                        if (data.url && data.url !== '#') window.open(data.url, '_blank', 'noopener,noreferrer');
                     });
                     cardsViewport.appendChild(card);
                 });
                 applyParallax();
             } catch(e) {
-                cardsViewport.innerHTML = '<div class="hud-loading">CONNECTION LOST</div>';
+                if (e.message === 'NO_RESULTS') {
+                    cardsViewport.innerHTML = '<div class="hud-loading">NO SIGNALS FOUND</div>';
+                } else {
+                    cardsViewport.innerHTML = '<div class="hud-loading">CONNECTION LOST</div>';
+                }
             }
         }
 
