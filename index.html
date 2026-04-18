@@ -3,198 +3,638 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Aura - The Sanctuary</title>
-    
+    <title>Aura — The Sanctuary</title>
+    <meta name="description" content="The world's first AI-powered web browser built for women. Private, safe, and empowering.">
+    <meta property="og:title" content="Aura — The Sanctuary">
+    <meta property="og:description" content="The world's first AI-powered web browser built for women.">
+    <meta property="og:type" content="website">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
-            --bg-dark: #040406; --surface: rgba(11, 11, 18, 0.98); --border: rgba(255, 255, 255, 0.08); 
-            --gold: #D4AF37; --teal: #5FB4A2; --berry: #A64D79; 
-            --fashion: #C397EB; --health: #FFB7B2; --text-dark: #FDFDFD; --muted: #99999F;
-            --nav-height: 140px;
+            --black:   #040406;
+            --surface: rgba(10, 10, 16, 0.98);
+            --border:  rgba(255,255,255,0.07);
+            --gold:    #C9A84C;
+            --teal:    #4EADA0;
+            --berry:   #A0426E;
+            --fashion: #B87ED4;
+            --health:  #E8917A;
+            --white:   #FDFCFA;
+            --muted:   #7A7A82;
+            --nav-h:   130px;
         }
-        
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; font-family: -apple-system, system-ui, sans-serif; height: 100vh; overflow: hidden; background: #FFFFFF; color: #000000; }
-        
-        .viewport { height: calc(100vh - var(--nav-height)); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 30px; transition: filter 0.5s ease; position: relative; }
-        .brand-name { font-size: clamp(54px, 15vw, 72px); font-weight: 800; letter-spacing: -2px; margin: 0 0 5px 0; }
-        .tagline { font-size: 14px; color: #666; font-weight: 400; letter-spacing: 1px; margin: 0; }
 
-        .invitation-suite { margin-top: 50px; width: 100%; max-width: 320px; }
-        .invite-label { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; font-weight: 700; color: #000; margin-bottom: 12px; }
-        .invite-desc { font-size: 13px; color: #777; line-height: 1.5; margin-bottom: 30px; }
-        
-        .input-group { position: relative; border-bottom: 1px solid #E0E0E0; padding-bottom: 8px; }
-        .invite-input { width: 100%; border: none; outline: none; font-size: 15px; color: #000; background: transparent; padding-right: 80px; }
-        .btn-request { position: absolute; right: 0; bottom: 8px; background: transparent; border: none; font-weight: 800; font-size: 12px; letter-spacing: 1px; cursor: pointer; color: #000; transition: color 0.3s; }
-        
-        .live-counter { margin-top: 25px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .live-counter .count { font-weight: 800; font-size: 13px; color: var(--teal); }
-        .live-counter .label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0; padding: 0;
+        }
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height); background: #0B0B12; display: flex; flex-direction: column; justify-content: center; padding: 15px 20px 25px; z-index: 3000; border-top-left-radius: 30px; border-top-right-radius: 30px; }
-        .utility-tabs { display: flex; gap: 20px; padding-bottom: 15px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
-        .tab { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: #FAFAF8;
+            color: #0D0D0D;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* ── MAIN VIEW ── */
+        #main-view {
+            height: calc(100vh - var(--nav-h));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 32px;
+            transition: filter 0.5s ease, opacity 0.5s ease;
+        }
+
+        .brand {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(62px, 18vw, 88px);
+            font-weight: 900;
+            letter-spacing: -3px;
+            line-height: 1;
+            margin-bottom: 10px;
+            color: #0A0A0A;
+        }
+
+        .tagline {
+            font-size: 13px;
+            color: #888;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* ── WAITLIST ── */
+        .waitlist {
+            margin-top: 52px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .waitlist-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .waitlist-desc {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            border-bottom: 1.5px solid #D0D0D0;
+            padding-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+        .input-row:focus-within { border-color: #0A0A0A; }
+
+        .email-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: #0A0A0A;
+            background: transparent;
+            placeholder-color: #AAA;
+        }
+        .email-input::placeholder { color: #BBB; }
+
+        .btn-submit {
+            background: none;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: #0A0A0A;
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.3s, opacity 0.3s;
+            white-space: nowrap;
+        }
+        .btn-submit:disabled { opacity: 0.4; cursor: default; }
+
+        .live-count {
+            margin-top: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .count-dot {
+            width: 6px; height: 6px;
+            background: var(--teal);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.8); }
+        }
+        .count-num {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--teal);
+            font-variant-numeric: tabular-nums;
+        }
+        .count-label {
+            font-size: 10px;
+            color: #AAA;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* ── BOTTOM NAV ── */
+        #bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            background: var(--black);
+            border-radius: 28px 28px 0 0;
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+
+        .tab {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
         .tab.active { color: #FFF; }
-        
-        .search-row { display: flex; width: 100%; align-items: center; }
-        .ai-search-field { flex: 1; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 25px; padding: 15px 20px; color: var(--muted); font-size: 14px; margin-right: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        
-        /* DIAMOND BUTTON - Z-INDEX FIX */
-        .diamond-trigger { width: 56px; height: 56px; background: #0B0B12; border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; z-index: 9999; transition: transform 0.2s; }
-        .diamond-trigger:active { transform: scale(0.9); }
+        .tab[data-tab="beauty"] { color: var(--fashion); opacity: 0.7; }
+        .tab[data-tab="shopping"] { color: var(--gold); opacity: 0.7; }
+        .tab[data-tab="health"] { color: var(--health); opacity: 0.7; }
 
-        /* THE HUB PANEL */
-        #sanctuary-hub { position: fixed; bottom: -100%; left: 0; right: 0; height: 92%; background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 40px 40px 0 0; transition: bottom 0.5s cubic-bezier(0.19, 1, 0.22, 1); z-index: 5000; padding: 45px 25px 30px; overflow-y: auto; color: var(--text-dark); }
-        #sanctuary-hub.open { bottom: 0; }
-        .drag-indicator { width: 45px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 10px; margin: -15px auto 35px; }
-        
-        .feature-tile { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 18px 20px; border-radius: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .feature-text b { display: block; font-size: 16px; color: #fff; margin-bottom: 4px; }
-        .feature-text span { font-size: 12px; color: var(--muted); display: block; }
-        
-        /* Interactive Toggles */
-        .toggle { width: 46px; height: 26px; background: rgba(255,255,255,0.1); border-radius: 13px; position: relative; cursor: pointer; transition: background 0.4s; }
-        .knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1); pointer-events: none; }
-        .toggle.active { background: var(--teal); }
-        .toggle.active.fashion-toggle { background: var(--fashion); }
-        .toggle.active.health-toggle { background: var(--health); }
-        .toggle.active .knob { left: 23px; }
-        
-        .btn-return { width: 100%; padding: 20px; background: var(--gold); border: none; border-radius: 20px; font-weight: 800; margin-top: 25px; font-size: 15px; cursor: pointer; color: #000; }
+        .search-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-bar {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 13px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .search-bar span:first-child {
+            font-size: 13px;
+            color: var(--muted);
+        }
+        .ai-badge {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--teal);
+            letter-spacing: 1px;
+        }
+
+        /* ── DIAMOND BUTTON ── */
+        .diamond-btn {
+            width: 52px; height: 52px;
+            background: rgba(201,168,76,0.08);
+            border: 1px solid rgba(201,168,76,0.25);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.2s;
+            flex-shrink: 0;
+            /* CRITICAL: ensure it's always tappable */
+            position: relative;
+            z-index: 200;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .diamond-btn:active {
+            transform: scale(0.88);
+            background: rgba(201,168,76,0.15);
+        }
+        .diamond-btn span { font-size: 24px; pointer-events: none; }
+
+        /* ── SANCTUARY PANEL ── */
+        #sanctuary {
+            position: fixed;
+            bottom: -100%;
+            left: 0; right: 0;
+            height: 93%;
+            background: var(--surface);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 36px 36px 0 0;
+            z-index: 1000;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 22px calc(40px + env(safe-area-inset-bottom));
+            transition: bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-overflow-scrolling: touch;
+        }
+        #sanctuary.open { bottom: 0; }
+
+        /* drag handle */
+        .handle {
+            width: 40px; height: 4px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 10px;
+            margin: 0 auto 28px;
+        }
+
+        .sanctuary-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--white);
+            margin-bottom: 6px;
+        }
+        .sanctuary-sub {
+            font-size: 13px;
+            color: var(--gold);
+            font-weight: 500;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .section-label {
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            margin-top: 28px;
+        }
+
+        /* Feature tiles */
+        .tile {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .tile-left { flex: 1; min-width: 0; }
+        .tile-tag {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .tile-tag::before {
+            content: '';
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+        .tile-name {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 3px;
+        }
+        .tile-desc {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        /* Toggles */
+        .toggle {
+            width: 44px; height: 25px;
+            border-radius: 13px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.35s;
+            flex-shrink: 0;
+        }
+        .knob {
+            width: 19px; height: 19px;
+            border-radius: 50%;
+            background: #fff;
+            position: absolute;
+            top: 3px; left: 3px;
+            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .toggle.on { background: var(--teal); }
+        .toggle.on .knob { left: 22px; }
+        .toggle.on.fashion { background: var(--fashion); }
+        .toggle.on.health  { background: var(--health); }
+        .toggle.on.berry   { background: var(--berry); }
+
+        /* Accent borders on tiles */
+        .accent-red    { border-left: 3px solid var(--berry); }
+        .accent-purple { border-left: 3px solid var(--fashion); }
+        .accent-pink   { border-left: 3px solid var(--health); }
+        .accent-berry  { border-left: 3px solid var(--berry); }
+
+        .btn-return {
+            width: 100%;
+            padding: 18px;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 18px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 28px;
+            transition: opacity 0.2s;
+        }
+        .btn-return:active { opacity: 0.8; }
+
+        /* blur main when panel open */
+        #main-view.blurred {
+            filter: blur(8px) brightness(0.85);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <div class="viewport" id="main-view">
-        <h1 class="brand-name">Aura</h1>
+    <!-- ── MAIN VIEW ── -->
+    <div id="main-view">
+        <h1 class="brand">Aura</h1>
         <p class="tagline">The web browser tailored to women.</p>
 
-        <div class="invitation-suite">
-            <h3 class="invite-label">Private Invitation</h3>
-            <p class="invite-desc">Request access to the world’s first AI-powered search engine for women. Secure your place in the first live wave.</p>
+        <div class="waitlist">
+            <p class="waitlist-label">Private Invitation</p>
+            <p class="waitlist-desc">Request access to the world's first AI-powered search browser for women. Secure your place in the first live wave.</p>
 
-            <form id="invite-form">
-                <div class="input-group">
-                    <input type="email" class="invite-input" id="email-input" placeholder="Your Email Address" required>
-                    <button type="submit" class="btn-request" id="submit-btn">REQUEST</button>
-                </div>
-            </form>
+            <div class="input-row">
+                <input type="email" class="email-input" id="email-input" placeholder="Your email address" autocomplete="email">
+                <button class="btn-submit" id="submit-btn" onclick="handleSignup()">Request</button>
+            </div>
 
-            <div class="live-counter">
-                <span class="count" id="count-val">...</span>
-                <span class="label">Seeking Sanctuary</span>
+            <div class="live-count">
+                <div class="count-dot"></div>
+                <span class="count-num" id="count-num">—</span>
+                <span class="count-label">Seeking Sanctuary</span>
             </div>
         </div>
     </div>
 
-    <div id="sanctuary-hub">
-        <div class="drag-indicator"></div>
-        <p style="color: var(--gold); font-weight: 600; text-align: center; margin-bottom: 30px;">Inventory Ready.<br>Your Private Sanctuary.</p>
-        
-        <div class="feature-tile">
-            <div class="feature-text"><b>Anti-Stalking Shield</b><span>Detects unauthorized location tracking.</span></div>
-            <div class="toggle active" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+    <!-- ── SANCTUARY PANEL ── -->
+    <div id="sanctuary">
+        <div class="handle"></div>
+
+        <h2 class="sanctuary-title">Diamond Sanctuary</h2>
+        <p class="sanctuary-sub">We're not just AI powered,<br>we're empowering women.</p>
+
+        <!-- Shield System -->
+        <p class="section-label" style="color: var(--berry);">Shield System</p>
+
+        <div class="tile accent-red">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--berry);">Active Scanning</div>
+                <div class="tile-name">Anti-Stalking Shield</div>
+                <div class="tile-desc">Detects unauthorized location tracking and digital shadowing.</div>
+            </div>
+            <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-        <div class="feature-tile" style="border-left: 4px solid var(--fashion);">
-            <div class="feature-text"><b>Fashion Vault</b><span>Private, AI-curated aesthetic boards.</span></div>
-            <div class="toggle active fashion-toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+
+        <div class="tile">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--muted);">Neural Filtering</div>
+                <div class="tile-name">Harassment Filter</div>
+                <div class="tile-desc">AI scrubs toxic intent and coordinated pile-ons in real-time.</div>
+            </div>
+            <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-        <div class="feature-tile" style="border-left: 4px solid var(--health);">
-            <div class="feature-text"><b>Health Vault</b><span>Encrypted cycle and symptom tracking.</span></div>
-            <div class="toggle active health-toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+
+        <!-- Personal Vaults -->
+        <p class="section-label" style="color: var(--fashion);">Personal Vaults</p>
+
+        <div class="tile accent-purple">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--fashion);">Style Curation</div>
+                <div class="tile-name">Fashion Vault</div>
+                <div class="tile-desc">Private, AI-curated aesthetic boards hidden from trackers.</div>
+            </div>
+            <div class="toggle on fashion" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-        
-        <button class="btn-return" onclick="toggleHub()">RETURN TO AURA</button>
+
+        <div class="tile accent-pink">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--health);">Secure Vitals</div>
+                <div class="tile-name">Health Vault</div>
+                <div class="tile-desc">Encrypted cycle and symptom sanctuary. Total privacy.</div>
+            </div>
+            <div class="toggle on health" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+        </div>
+
+        <!-- Guardian System -->
+        <p class="section-label" style="color: var(--gold);">Guardian System</p>
+
+        <div class="tile accent-berry">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--berry);">Live Protection</div>
+                <div class="tile-name">Date Mode</div>
+                <div class="tile-desc">Emergency exit strategies, alibi calls, and location pings.</div>
+            </div>
+            <div class="toggle on berry" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+        </div>
+
+        <div class="tile">
+            <div class="tile-left">
+                <div class="tile-tag" style="color: var(--muted);">Safety Timer</div>
+                <div class="tile-name">Walking Alone Mode</div>
+                <div class="tile-desc">Path-tracking with automatic check-in safety alerts.</div>
+            </div>
+            <div class="toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
+        </div>
+
+        <button class="btn-return" onclick="closePanel()">Return to Aura</button>
     </div>
 
-    <nav class="bottom-nav">
-        <div class="utility-tabs">
-            <div class="tab active">Web</div>
-            <div class="tab">AI</div>
-            <div class="tab" style="color: var(--fashion);">Beauty</div>
-            <div class="tab" style="color: var(--gold);">Shopping</div>
-            <div class="tab" style="color: var(--health);">Health</div>
+    <!-- ── BOTTOM NAV ── -->
+    <nav id="bottom-nav">
+        <div class="tabs">
+            <div class="tab active" data-tab="web">Web</div>
+            <div class="tab" data-tab="ai">AI</div>
+            <div class="tab" data-tab="beauty">Beauty</div>
+            <div class="tab" data-tab="shopping">Shopping</div>
+            <div class="tab" data-tab="health">Health</div>
         </div>
         <div class="search-row">
-            <div class="ai-search-field" onclick="alert('Aura Search will activate at launch.')">
+            <div class="search-bar" onclick="alert('Aura Search activates at launch.')">
                 <span>Ask Aura...</span>
-                <span style="font-size: 11px; color: var(--teal); font-weight: 800;">● AI</span>
+                <span class="ai-badge">● AI</span>
             </div>
-            <div class="diamond-trigger" id="diamond-btn" onclick="toggleHub()">
-                <span style="font-size: 26px; pointer-events: none;">💎</span>
+            <div class="diamond-btn" id="diamond-btn">
+                <span>💎</span>
             </div>
         </div>
     </nav>
 
     <script>
-        // --- 1. SUPABASE CONFIG ---
-        const SUPABASE_URL = 'https://inkvqoerebpxozxwogmj.supabase.co'; 
-        const SUPABASE_ANON_KEY = 'Sb_publishable_qIek_iF4CiXAP0_Q21MoAQ_ZmIw7y-o';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // ── SUPABASE SETUP (safe — UI never crashes if this fails) ──
+        let db = null;
+        try {
+            const SUPABASE_URL = 'https://inkvqoerebpxozxwogmj.supabase.co';
+            const SUPABASE_KEY = 'Sb_publishable_qIek_iF4CiXAP0_Q21MoAQ_ZmIw7y-o';
+            db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        } catch(e) {
+            console.warn('Supabase init failed:', e.message);
+        }
 
-        // --- 2. HUB TOGGLE LOGIC ---
-        function toggleHub() {
-            const hub = document.getElementById('sanctuary-hub');
-            const main = document.getElementById('main-view');
-            hub.classList.toggle('open');
-            
-            if (hub.classList.contains('open')) {
-                main.style.filter = 'blur(10px) brightness(0.8)';
-                main.style.pointerEvents = 'none';
-            } else {
-                main.style.filter = 'none';
-                main.style.pointerEvents = 'auto';
+        // ── PANEL OPEN / CLOSE ──
+        const panel   = document.getElementById('sanctuary');
+        const mainView = document.getElementById('main-view');
+        const diamondBtn = document.getElementById('diamond-btn');
+
+        function openPanel() {
+            panel.classList.add('open');
+            mainView.classList.add('blurred');
+        }
+
+        function closePanel() {
+            panel.classList.remove('open');
+            mainView.classList.remove('blurred');
+        }
+
+        // Use both click and touchend for maximum mobile compatibility
+        diamondBtn.addEventListener('click', openPanel);
+        diamondBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            openPanel();
+        });
+
+        // ── TOGGLE SWITCHES ──
+        function toggleSwitch(el) {
+            el.classList.toggle('on');
+        }
+
+        // ── LIVE COUNT ──
+        async function fetchCount() {
+            const el = document.getElementById('count-num');
+            if (!db) { el.textContent = '—'; return; }
+            try {
+                const { count, error } = await db
+                    .from('waitlist')
+                    .select('*', { count: 'exact', head: true });
+                if (!error && count !== null) {
+                    el.textContent = count.toLocaleString();
+                }
+            } catch(e) {
+                el.textContent = '—';
             }
         }
 
-        function toggleSwitch(element) {
-            element.classList.toggle('active');
-        }
-
-        // --- 3. DATABASE LOGIC ---
-        async function fetchLiveCount() {
-            const countVal = document.getElementById('count-val');
-            try {
-                const { count, error } = await supabase
-                    .from('waitlist')
-                    .select('*', { count: 'exact', head: true });
-                if (!error) countVal.innerText = count.toLocaleString();
-            } catch (e) { countVal.innerText = "0"; }
-        }
-
-        document.getElementById('invite-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submit-btn');
+        // ── SIGNUP ──
+        async function handleSignup() {
             const emailInput = document.getElementById('email-input');
-            btn.innerText = "SECURING...";
+            const btn = document.getElementById('submit-btn');
+            const email = emailInput.value.trim();
 
-            const { error } = await supabase.from('waitlist').insert([{ email: emailInput.value }]);
-
-            if (error) {
-                if (error.code === '23505') alert("Aura Protocol: Already Secured.");
-                btn.innerText = "SECURED";
+            if (!email || !email.includes('@')) {
+                emailInput.focus();
                 return;
             }
 
-            btn.innerText = "SECURED";
-            btn.style.color = "var(--teal)";
-            emailInput.disabled = true;
-            localStorage.setItem('aura_secured', 'true');
-            fetchLiveCount();
+            btn.textContent = '...';
+            btn.disabled = true;
+
+            if (!db) {
+                // No DB — still give user feedback
+                btn.textContent = 'Secured';
+                btn.style.color = 'var(--teal)';
+                emailInput.disabled = true;
+                localStorage.setItem('aura_secured', 'true');
+                return;
+            }
+
+            try {
+                const { error } = await db.from('waitlist').insert([{ email }]);
+                if (error && error.code === '23505') {
+                    btn.textContent = 'Secured ✓';
+                } else if (error) {
+                    btn.textContent = 'Error';
+                    btn.disabled = false;
+                    console.error(error);
+                    return;
+                } else {
+                    btn.textContent = 'Secured ✓';
+                    btn.style.color = 'var(--teal)';
+                    emailInput.disabled = true;
+                    localStorage.setItem('aura_secured', 'true');
+                    fetchCount();
+                }
+            } catch(e) {
+                btn.textContent = 'Retry';
+                btn.disabled = false;
+            }
+        }
+
+        // Allow pressing Enter to submit
+        document.getElementById('email-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); handleSignup(); }
         });
 
-        window.onload = function() {
-            fetchLiveCount();
-            if(localStorage.getItem('aura_secured') === 'true') {
+        // ── ON LOAD ──
+        window.addEventListener('load', function() {
+            fetchCount();
+            if (localStorage.getItem('aura_secured') === 'true') {
                 const btn = document.getElementById('submit-btn');
-                btn.innerText = "SECURED";
-                btn.style.color = "var(--teal)";
+                btn.textContent = 'Secured ✓';
+                btn.style.color = 'var(--teal)';
+                btn.disabled = true;
                 document.getElementById('email-input').disabled = true;
             }
-        };
+        });
     </script>
 </body>
 </html>
