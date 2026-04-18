@@ -91,7 +91,7 @@
         @media (orientation: portrait)  { .cards-viewport { flex-direction: column; overflow-y: auto; overflow-x: hidden; align-items: center; } }
         @media (orientation: landscape) { .cards-viewport { flex-direction: row; overflow-x: auto; overflow-y: hidden; align-items: center; } }
 
-        .tactical-card { flex: 0 0 auto; width: min(280px, 85vw); height: 260px; background: #111114; border: 1px solid rgba(0,240,255,0.15); box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,240,255,0.03); display: flex; flex-direction: column; justify-content: space-between; padding: 22px; position: relative; transform-style: preserve-3d; transition: transform 0.15s; cursor: pointer; border-radius: 4px; }
+        .tactical-card { flex: 0 0 auto; width: min(280px, 85vw); height: 260px; background: transparent; border: 1px solid rgba(0,240,255,0.15); box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 0 30px rgba(0,240,255,0.02); display: flex; flex-direction: column; justify-content: space-between; padding: 22px; position: relative; transform-style: preserve-3d; transition: transform 0.15s; cursor: pointer; border-radius: 4px; }
         .tactical-card::before, .tactical-card::after { content:''; position:absolute; width:14px; height:14px; }
         .tactical-card::before { top:-1px; left:-1px; border-top:2px solid var(--hud-accent); border-left:2px solid var(--hud-accent); }
         .tactical-card::after  { bottom:-1px; right:-1px; border-bottom:2px solid var(--hud-accent); border-right:2px solid var(--hud-accent); }
@@ -123,7 +123,65 @@
         .diamond-btn:active { transform:scale(0.88); background:rgba(201,168,76,0.15); }
         .diamond-btn span { font-size:24px; pointer-events:none; }
 
-        /* ── SANCTUARY PANEL ── */
+        /* ── LANDSCAPE: collapse nav to floating orb ── */
+        @media (orientation: landscape) {
+            :root { --nav-h: 0px; }
+            #bottom-nav { display: none; }
+            #search-view { bottom: 0; }
+            #home-view { height: 100vh; }
+
+            /* Floating orb */
+            #search-orb {
+                display: flex;
+            }
+        }
+        @media (orientation: portrait) {
+            #search-orb { display: none !important; }
+        }
+
+        /* Floating search orb — landscape only */
+        #search-orb {
+            display: none;
+            position: fixed;
+            bottom: 24px;
+            right: 20px;
+            z-index: 700;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .orb-btn {
+            width: 44px; height: 44px;
+            background: rgba(0,240,255,0.06);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.2s, transform 0.15s;
+            -webkit-user-select: none; user-select: none;
+        }
+        .orb-btn:active { transform: scale(0.88); background: rgba(0,240,255,0.15); }
+        #orb-search-wrap {
+            display: none;
+            background: rgba(5,5,7,0.85);
+            border: 1px solid rgba(0,240,255,0.2);
+            border-radius: 22px;
+            padding: 0 14px;
+            height: 40px;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        #orb-search-wrap.open { display: flex; }
+        #orb-input {
+            background: transparent; border: none; outline: none;
+            font-family: 'DM Sans', sans-serif; font-size: 12px;
+            color: #DDD; width: 140px;
+        }
+        #orb-input::placeholder { color: rgba(0,240,255,0.4); font-family: 'Courier New', monospace; letter-spacing: 1px; }
+        .orb-ai { font-size: 9px; font-weight: 800; color: var(--teal); letter-spacing: 1px; white-space: nowrap; }
         #sanctuary { position:fixed; bottom:-100%; left:0; right:0; height:93%; background:var(--surface); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border-radius:36px 36px 0 0; z-index:1000; overflow-y:auto; overflow-x:hidden; padding:20px 22px calc(40px + env(safe-area-inset-bottom)); transition:bottom 0.45s cubic-bezier(0.16,1,0.3,1); -webkit-overflow-scrolling:touch; }
         #sanctuary.open { bottom:0; }
         .handle { width:40px; height:4px; background:rgba(255,255,255,0.12); border-radius:10px; margin:0 auto 28px; }
@@ -175,6 +233,15 @@
         <div class="cards-viewport" id="cards-viewport"></div>
     </div>
 
+    <!-- FLOATING SEARCH ORB (landscape only) -->
+    <div id="search-orb">
+        <div id="orb-search-wrap">
+            <input type="text" id="orb-input" placeholder="ASK AURA..." autocomplete="off" autocorrect="off" spellcheck="false">
+            <span class="orb-ai">● AI</span>
+        </div>
+        <div class="orb-btn" id="orb-btn">🔍</div>
+    </div>
+
     <!-- SANCTUARY PANEL -->
     <div id="sanctuary">
         <div class="handle"></div>
@@ -221,7 +288,7 @@
         </div>
         <div class="search-row">
             <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
+                <input type="text" inputmode="search" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
                 <span class="ai-badge">● AI</span>
             </div>
             <div class="diamond-btn" id="diamond-btn"><span>💎</span></div>
@@ -229,6 +296,27 @@
     </nav>
 
     <script>
+        // ══ LANDSCAPE SEARCH ORB ══
+        const orbBtn  = document.getElementById('orb-btn');
+        const orbWrap = document.getElementById('orb-search-wrap');
+        const orbInput = document.getElementById('orb-input');
+
+        orbBtn.addEventListener('click', () => {
+            const isOpen = orbWrap.classList.toggle('open');
+            if (isOpen) { setTimeout(() => orbInput.focus(), 50); }
+        });
+        orbBtn.addEventListener('touchend', e => { e.preventDefault(); orbBtn.click(); });
+
+        orbInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                orbWrap.classList.remove('open');
+                runSearch(orbInput.value);
+                orbInput.value = '';
+            }
+            if (e.key === 'Escape') { orbWrap.classList.remove('open'); }
+        });
+
         // ══ SUPABASE (safe — never crashes UI) ══
         let db = null;
         try {
@@ -314,6 +402,9 @@
         searchInput.addEventListener('keydown', e => {
             if (e.key === 'Enter') { e.preventDefault(); runSearch(searchInput.value); }
         });
+        searchInput.addEventListener('search', () => runSearch(searchInput.value));
+        document.querySelector('.ai-badge').addEventListener('click', () => runSearch(searchInput.value));
+        document.querySelector('.ai-badge').addEventListener('touchend', e => { e.preventDefault(); runSearch(searchInput.value); });
 
         // 3D parallax on scroll
         function applyParallax() {
@@ -328,7 +419,9 @@
             });
         }
         cardsViewport.addEventListener('scroll', applyParallax);
-        window.addEventListener('resize', applyParallax);
+        window.addEventListener('resize', () => {
+            if (searchView.classList.contains('visible')) applyParallax();
+        });
 
         // ══ WAITLIST ══
         async function fetchCount() {
