@@ -45,7 +45,9 @@
         #home-view.blurred { filter: blur(8px) brightness(0.85); pointer-events: none; }
         #home-view.hidden  { opacity: 0; pointer-events: none; }
 
-        .brand { font-family: 'Playfair Display', serif; font-size: clamp(62px,18vw,88px); font-weight: 900; letter-spacing: -3px; line-height: 1; margin-bottom: 10px; color: #0A0A0A; }
+        .brand-row { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; }
+        .brand-diamond { animation: diamond-pulse 3s ease-in-out infinite; flex-shrink:0; margin-top:6px; }
+        .brand { font-family: 'Playfair Display', serif; font-size: clamp(62px,18vw,88px); font-weight: 900; letter-spacing: -3px; line-height: 1; color: #0A0A0A; margin-bottom: 0; }
         .tagline { font-size: 13px; color: #888; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
         .waitlist { margin-top: 52px; width: 100%; max-width: 300px; }
         .waitlist-label { font-size: 10px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; color: #333; margin-bottom: 8px; }
@@ -81,10 +83,90 @@
         }
         #search-view.visible { opacity: 1; pointer-events: all; }
 
-        .hud-bar { display: flex; align-items: center; gap: 12px; padding: 16px 20px 8px; flex-shrink: 0; }
-        .hud-back { width: 36px; height: 36px; background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--hud-accent); font-size: 16px; flex-shrink: 0; transition: background 0.2s; }
-        .hud-back:active { background: rgba(0,240,255,0.15); }
-        .hud-query-display { flex: 1; font-family: 'Courier New', monospace; font-size: 11px; color: var(--hud-accent); letter-spacing: 2px; opacity: 0.8; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        /* ── HUD BAR — Diamond Glass Header ── */
+        .hud-bar {
+            display: flex; align-items: center; gap: 12px;
+            flex-shrink: 0; overflow: hidden; position: relative;
+
+            /* Diamond Glass */
+            background: rgba(8, 8, 14, 0.55);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+            border-bottom: 1px solid rgba(0,240,255,0.12);
+            box-shadow:
+                inset 0 -1px 0 rgba(0,240,255,0.06),
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        /* Portrait: full-width bar */
+        @media (orientation: portrait) {
+            .hud-bar {
+                padding: calc(env(safe-area-inset-top) + 14px) 16px 14px;
+                flex-direction: row;
+            }
+        }
+
+        /* Landscape: compact single-line bar */
+        @media (orientation: landscape) {
+            .hud-bar {
+                padding: 10px 16px;
+                flex-direction: row;
+            }
+        }
+
+        /* Facet light inside hud-bar */
+        .hud-bar .hud-facet {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background: conic-gradient(
+                from 0deg at 50% -20%,
+                transparent 0deg,
+                rgba(0,240,255,0.04) 60deg,
+                transparent 120deg,
+                rgba(255,255,255,0.02) 180deg,
+                transparent 240deg
+            );
+            animation: rotate-facet 12s linear infinite;
+        }
+
+        /* Shimmer sweep on hud-bar */
+        .hud-bar::after {
+            content: '';
+            position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+            transform: skewX(-15deg);
+            animation: hud-shimmer 7s ease-in-out infinite;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes hud-shimmer { 0%,100%{left:-80%} 55%{left:130%} }
+
+        .hud-back {
+            width: 34px; height: 34px;
+            background: rgba(0,240,255,0.06);
+            border: 1px solid rgba(0,240,255,0.22);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--hud-accent); font-size: 15px;
+            flex-shrink: 0; transition: background 0.2s, box-shadow 0.2s;
+            position: relative; z-index: 1;
+            box-shadow: inset 0 0 8px rgba(0,240,255,0.05);
+        }
+        .hud-back:active { background: rgba(0,240,255,0.18); box-shadow: 0 0 14px rgba(0,240,255,0.2); }
+
+        /* Liquid glass query pill */
+        .hud-query-display {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 11px; color: var(--hud-accent);
+            letter-spacing: 2px; opacity: 0.85;
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+            background: rgba(0,240,255,0.04);
+            border: 1px solid rgba(0,240,255,0.1);
+            border-radius: 14px;
+            padding: 6px 14px;
+            text-shadow: 0 0 8px rgba(0,240,255,0.4);
+            position: relative; z-index: 1;
+        }
 
         .cards-viewport { flex: 1; display: flex; perspective: 1000px; padding: 20px; gap: 20px; -webkit-overflow-scrolling: touch; }
         .cards-viewport::-webkit-scrollbar { display: none; }
@@ -104,24 +186,132 @@
         .hud-loading { margin: auto; font-family:'Courier New',monospace; font-size:13px; color:var(--hud-accent); letter-spacing:3px; animation: blink 1s step-end infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
-        /* ── BOTTOM NAV ── */
-        #bottom-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); background:var(--black); border-radius:28px 28px 0 0; padding:16px 20px calc(16px + env(safe-area-inset-bottom)); z-index:600; display:flex; flex-direction:column; gap:12px; }
+        /* ── BOTTOM NAV — Diamond Glass ── */
+        #bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: var(--nav-h);
+            border-radius: 28px 28px 0 0;
+            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+            z-index: 600;
+            display: flex; flex-direction: column; gap: 12px;
+            overflow: hidden;
+
+            /* Diamond Glass foundation */
+            background: rgba(8, 8, 14, 0.55);
+            backdrop-filter: blur(28px) saturate(180%);
+            -webkit-backdrop-filter: blur(28px) saturate(180%);
+
+            /* Faceted edge reflections */
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,0.12),
+                inset 1px 0 0 rgba(0,240,255,0.06),
+                inset -1px 0 0 rgba(0,240,255,0.06),
+                0 -8px 40px rgba(0,0,0,0.6);
+
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Rotating facet light overlay */
+        #bottom-nav .facet-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            background: conic-gradient(
+                from 0deg at 50% 120%,
+                transparent 0deg,
+                rgba(255,255,255,0.03) 45deg,
+                transparent 90deg,
+                rgba(0,240,255,0.04) 180deg,
+                transparent 270deg
+            );
+            animation: rotate-facet 10s linear infinite;
+        }
+
+        /* Shimmer sweep */
+        #bottom-nav::after {
+            content: '';
+            position: absolute; top: -50%; left: -60%;
+            width: 40%; height: 200%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.07),
+                transparent
+            );
+            transform: skewX(-20deg);
+            animation: nav-shimmer 6s ease-in-out infinite;
+            pointer-events: none; z-index: 0;
+        }
+
+        @keyframes rotate-facet { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes nav-shimmer  { 0%,100%{left:-60%} 50%{left:120%} }
+
+        /* All direct nav children sit above overlays */
+        .tabs, .search-row { position: relative; z-index: 1; }
+
         .tabs { display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; }
         .tabs::-webkit-scrollbar { display:none; }
         .tab { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); white-space:nowrap; cursor:pointer; transition:color 0.2s; }
-        .tab.active { color:#FFF; }
+        .tab.active { color:#FFF; text-shadow: 0 0 12px rgba(255,255,255,0.4); }
         .tab[data-tab="beauty"]   { color:var(--fashion); opacity:0.7; }
         .tab[data-tab="shopping"] { color:var(--gold);    opacity:0.7; }
         .tab[data-tab="health"]   { color:var(--health);  opacity:0.7; }
+
         .search-row { display:flex; align-items:center; gap:12px; }
-        .search-bar { flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:22px; padding:0 18px; height:48px; display:flex; align-items:center; gap:10px; transition:border-color 0.2s; }
-        .search-bar:focus-within { border-color:rgba(0,240,255,0.3); }
-        #search-input { flex:1; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:#DDD; }
-        #search-input::placeholder { color:var(--muted); }
-        .ai-badge { font-size:10px; font-weight:800; color:var(--teal); letter-spacing:1px; white-space:nowrap; }
-        .diamond-btn { width:52px; height:52px; background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.25); border-radius:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.15s,background 0.2s; flex-shrink:0; position:relative; z-index:200; -webkit-user-select:none; user-select:none; }
-        .diamond-btn:active { transform:scale(0.88); background:rgba(201,168,76,0.15); }
-        .diamond-btn span { font-size:24px; pointer-events:none; }
+
+        /* Liquid Glass search pill */
+        .search-bar {
+            flex: 1;
+            background: rgba(13, 17, 23, 0.65);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(0,240,255,0.25);
+            border-radius: 22px;
+            padding: 0 18px; height: 48px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow:
+                inset 0 0 12px rgba(0,240,255,0.04),
+                0 4px 20px rgba(0,0,0,0.4);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            overflow: hidden; position: relative;
+        }
+        .search-bar::before {
+            content: '';
+            position: absolute; top: 0; left: -80%; width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,240,255,0.06), transparent);
+            animation: pill-shimmer 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes pill-shimmer { 0%,100%{left:-80%} 60%{left:120%} }
+        .search-bar:focus-within {
+            border-color: rgba(0,240,255,0.55);
+            box-shadow: inset 0 0 16px rgba(0,240,255,0.07), 0 0 20px rgba(0,240,255,0.1);
+        }
+        #search-input { flex:1; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:#DDD; position:relative; z-index:1; }
+        #search-input::placeholder { color:rgba(0,240,255,0.35); font-family:'Courier New',monospace; letter-spacing:1px; font-size:12px; }
+        .ai-badge { font-size:10px; font-weight:800; color:var(--teal); letter-spacing:1px; white-space:nowrap; text-shadow:0 0 8px var(--teal); position:relative; z-index:1; cursor:pointer; }
+
+        /* ── REAL CUT DIAMOND SVG ── */
+        .diamond-btn { width:52px; height:52px; background:rgba(201,168,76,0.04); border:1px solid rgba(201,168,76,0.2); border-radius:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.15s, box-shadow 0.3s; flex-shrink:0; position:relative; z-index:200; -webkit-user-select:none; user-select:none;
+            box-shadow: inset 0 0 10px rgba(201,168,76,0.05), 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .diamond-btn:active { transform:scale(0.88); box-shadow:0 0 22px rgba(180,220,255,0.3), 0 0 8px rgba(201,168,76,0.2); }
+
+        /* Light-sweep animation on the crown */
+        @keyframes diamond-light {
+            0%   { opacity: 0; transform: translateX(-120%) skewX(-20deg); }
+            40%  { opacity: 1; }
+            100% { opacity: 0; transform: translateX(180%) skewX(-20deg); }
+        }
+        @keyframes diamond-pulse {
+            0%,100% { filter: drop-shadow(0 0 5px rgba(160,210,255,0.5)) drop-shadow(0 0 2px rgba(255,255,255,0.3)); }
+            50%      { filter: drop-shadow(0 0 9px rgba(160,210,255,0.8)) drop-shadow(0 0 4px rgba(255,255,255,0.5)); }
+        }
+        .cut-diamond {
+            animation: diamond-pulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .diamond-sweep {
+            animation: diamond-light 4s ease-in-out infinite;
+        }
 
         /* ── LANDSCAPE: collapse nav to floating orb ── */
         @media (orientation: landscape) {
@@ -207,7 +397,55 @@
 
     <!-- HOME -->
     <div id="home-view">
-        <h1 class="brand">Aura</h1>
+        <div class="brand-row">
+            <svg class="cut-diamond brand-diamond" viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="38" height="42">
+              <defs>
+                <linearGradient id="b-ts"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/></linearGradient>
+                <linearGradient id="b-table" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e8f6ff" stop-opacity="0.92"/><stop offset="60%" stop-color="#aed0ec" stop-opacity="0.78"/><stop offset="100%" stop-color="#6a9cbe" stop-opacity="0.6"/></linearGradient>
+                <linearGradient id="b-lc"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ddf0ff" stop-opacity="0.88"/><stop offset="100%" stop-color="#2e5878" stop-opacity="0.75"/></linearGradient>
+                <linearGradient id="b-rc"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#a8ccec" stop-opacity="0.72"/><stop offset="100%" stop-color="#142840" stop-opacity="0.92"/></linearGradient>
+                <linearGradient id="b-ls"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/><stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/></linearGradient>
+                <linearGradient id="b-rs"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/><stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/></linearGradient>
+                <linearGradient id="b-lp"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#183048" stop-opacity="0.96"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
+                <linearGradient id="b-rp"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#305070" stop-opacity="0.88"/><stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/></linearGradient>
+                <linearGradient id="b-cp"  x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/><stop offset="45%" stop-color="#020408" stop-opacity="0.99"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
+                <linearGradient id="b-lmp" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3850" stop-opacity="0.92"/><stop offset="100%" stop-color="#060e1c" stop-opacity="0.98"/></linearGradient>
+                <linearGradient id="b-rmp" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#243c58" stop-opacity="0.88"/><stop offset="100%" stop-color="#050c1a" stop-opacity="0.98"/></linearGradient>
+                <filter id="b-spec" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <filter id="b-glw"  x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <clipPath id="b-clip"><polygon points="15,7 37,7 50,22 26,56 2,22"/></clipPath>
+                <linearGradient id="b-sweep" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
+              </defs>
+              <polygon points="15,7 37,7 26,16"   fill="url(#b-ts)"/>
+              <polygon points="15,7 26,16 10,22"  fill="url(#b-ls)"/>
+              <polygon points="26,16 37,7 42,22"  fill="url(#b-rs)"/>
+              <polygon points="15,7 37,7 42,22 10,22" fill="url(#b-table)" opacity="0.38"/>
+              <polygon points="2,22 10,22 15,7"   fill="url(#b-lc)"/>
+              <polygon points="37,7 50,22 42,22"  fill="url(#b-rc)"/>
+              <polygon points="2,22 10,22 26,56"  fill="url(#b-lp)"/>
+              <polygon points="10,22 26,33 26,56" fill="url(#b-lmp)"/>
+              <polygon points="10,22 42,22 26,33" fill="url(#b-cp)"/>
+              <polygon points="42,22 26,33 26,56" fill="url(#b-rmp)"/>
+              <polygon points="42,22 50,22 26,56" fill="url(#b-rp)"/>
+              <line x1="2"  y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
+              <polyline points="2,22 15,7 37,7 50,22" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+              <line x1="15" y1="7"  x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
+              <line x1="37" y1="7"  x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
+              <line x1="10" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
+              <line x1="42" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
+              <line x1="10" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
+              <line x1="42" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
+              <line x1="10" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
+              <line x1="42" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
+              <ellipse cx="22" cy="12" rx="4.5" ry="2"   fill="white" fill-opacity="0.72" filter="url(#b-spec)" transform="rotate(-12,22,12)"/>
+              <ellipse cx="17" cy="9"  rx="2"   ry="0.9" fill="white" fill-opacity="0.55" filter="url(#b-spec)"/>
+              <ellipse cx="39" cy="10" rx="1.4" ry="0.6" fill="#00f0ff" fill-opacity="0.45" filter="url(#b-glw)"/>
+              <ellipse cx="12" cy="19" rx="1"   ry="0.5" fill="#ffc060" fill-opacity="0.35" filter="url(#b-glw)"/>
+              <circle  cx="26" cy="56" r="0.9"  fill="white" fill-opacity="0.65" filter="url(#b-glw)"/>
+              <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#b-sweep)" opacity="0.18" clip-path="url(#b-clip)"/>
+            </svg>
+            <h1 class="brand">Aura</h1>
+        </div>
         <p class="tagline">The web browser tailored to women.</p>
         <div class="waitlist">
             <p class="waitlist-label">Private Invitation</p>
@@ -227,6 +465,7 @@
     <!-- SEARCH RESULTS -->
     <div id="search-view">
         <div class="hud-bar">
+            <div class="hud-facet"></div>
             <div class="hud-back" onclick="closeSearch()">←</div>
             <div class="hud-query-display" id="hud-query-text">AURA_CORE // SEARCHING...</div>
         </div>
@@ -279,6 +518,7 @@
 
     <!-- BOTTOM NAV -->
     <nav id="bottom-nav">
+        <div class="facet-overlay"></div>
         <div class="tabs">
             <div class="tab active" data-tab="web">Web</div>
             <div class="tab" data-tab="ai">AI</div>
@@ -291,7 +531,140 @@
                 <input type="text" inputmode="search" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
                 <span class="ai-badge">● AI</span>
             </div>
-            <div class="diamond-btn" id="diamond-btn"><span>💎</span></div>
+            <div class="diamond-btn" id="diamond-btn">
+                <svg class="cut-diamond" viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="34" height="37">
+                  <defs>
+                    <!-- Crown gradients — top-facing facets catch direct light -->
+                    <linearGradient id="g-ts" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>
+                      <stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/>
+                    </linearGradient>
+                    <linearGradient id="g-table" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#e8f6ff" stop-opacity="0.92"/>
+                      <stop offset="60%" stop-color="#aed0ec" stop-opacity="0.78"/>
+                      <stop offset="100%" stop-color="#6a9cbe" stop-opacity="0.6"/>
+                    </linearGradient>
+                    <linearGradient id="g-lc" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#ddf0ff" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#2e5878" stop-opacity="0.75"/>
+                    </linearGradient>
+                    <linearGradient id="g-rc" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#a8ccec" stop-opacity="0.72"/>
+                      <stop offset="100%" stop-color="#142840" stop-opacity="0.92"/>
+                    </linearGradient>
+                    <linearGradient id="g-ls" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/>
+                    </linearGradient>
+                    <linearGradient id="g-rs" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/>
+                      <stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/>
+                    </linearGradient>
+                    <!-- Pavilion gradients — deep internal reflections -->
+                    <linearGradient id="g-lp" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#183048" stop-opacity="0.96"/>
+                      <stop offset="100%" stop-color="#040810" stop-opacity="0.99"/>
+                    </linearGradient>
+                    <linearGradient id="g-rp" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#305070" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/>
+                    </linearGradient>
+                    <linearGradient id="g-cp" x1="30%" y1="0%" x2="70%" y2="100%">
+                      <stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/>
+                      <stop offset="45%" stop-color="#020408" stop-opacity="0.99"/>
+                      <stop offset="100%" stop-color="#040810" stop-opacity="0.99"/>
+                    </linearGradient>
+                    <linearGradient id="g-lmp" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#1e3850" stop-opacity="0.92"/>
+                      <stop offset="100%" stop-color="#060e1c" stop-opacity="0.98"/>
+                    </linearGradient>
+                    <linearGradient id="g-rmp" x1="100%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#243c58" stop-opacity="0.88"/>
+                      <stop offset="100%" stop-color="#050c1a" stop-opacity="0.98"/>
+                    </linearGradient>
+                    <!-- Filters -->
+                    <filter id="spec" x="-30%" y="-30%" width="160%" height="160%">
+                      <feGaussianBlur stdDeviation="0.7" result="b"/>
+                      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <filter id="glw" x="-40%" y="-40%" width="180%" height="180%">
+                      <feGaussianBlur stdDeviation="1.4" result="b"/>
+                      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                    <!-- Clip to diamond shape -->
+                    <clipPath id="diamond-clip">
+                      <polygon points="15,7 37,7 50,22 26,56 2,22"/>
+                    </clipPath>
+                  </defs>
+
+                  <!-- ══ CROWN FACETS ══ -->
+                  <!-- Top star — catches most direct light, brightest -->
+                  <polygon points="15,7 37,7 26,16" fill="url(#g-ts)"/>
+                  <!-- Left star -->
+                  <polygon points="15,7 26,16 10,22" fill="url(#g-ls)"/>
+                  <!-- Right star -->
+                  <polygon points="26,16 37,7 42,22" fill="url(#g-rs)"/>
+                  <!-- Table overlay (semi-transparent depth) -->
+                  <polygon points="15,7 37,7 42,22 10,22" fill="url(#g-table)" opacity="0.38"/>
+                  <!-- Left outer crown bezel -->
+                  <polygon points="2,22 10,22 15,7" fill="url(#g-lc)"/>
+                  <!-- Right outer crown bezel -->
+                  <polygon points="37,7 50,22 42,22" fill="url(#g-rc)"/>
+
+                  <!-- ══ PAVILION FACETS ══ -->
+                  <!-- Left outer pavilion -->
+                  <polygon points="2,22 10,22 26,56" fill="url(#g-lp)"/>
+                  <!-- Left main pavilion -->
+                  <polygon points="10,22 26,33 26,56" fill="url(#g-lmp)"/>
+                  <!-- Center upper pavilion (bowtie/dark zone) -->
+                  <polygon points="10,22 42,22 26,33" fill="url(#g-cp)"/>
+                  <!-- Right main pavilion -->
+                  <polygon points="42,22 26,33 26,56" fill="url(#g-rmp)"/>
+                  <!-- Right outer pavilion -->
+                  <polygon points="42,22 50,22 26,56" fill="url(#g-rp)"/>
+
+                  <!-- ══ STRUCTURAL EDGES ══ -->
+                  <!-- Girdle line (bright rim) -->
+                  <line x1="2" y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
+                  <!-- Crown outline -->
+                  <polyline points="2,22 15,7 37,7 50,22" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
+                  <!-- Crown inner facet lines -->
+                  <line x1="15" y1="7"  x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
+                  <line x1="37" y1="7"  x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
+                  <line x1="10" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
+                  <line x1="42" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
+                  <!-- Pavilion facet lines -->
+                  <line x1="10" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
+                  <line x1="42" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
+                  <line x1="10" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
+                  <line x1="42" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
+
+                  <!-- ══ SPECULAR HIGHLIGHTS ══ -->
+                  <!-- Primary specular flash on table -->
+                  <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.72" filter="url(#spec)" transform="rotate(-12,22,12)"/>
+                  <!-- Secondary highlight -->
+                  <ellipse cx="17" cy="9"  rx="2"   ry="0.9" fill="white" fill-opacity="0.55" filter="url(#spec)"/>
+                  <!-- Prismatic cyan accent -->
+                  <ellipse cx="39" cy="10" rx="1.4" ry="0.6" fill="#00f0ff" fill-opacity="0.45" filter="url(#glw)"/>
+                  <!-- Prismatic warm accent -->
+                  <ellipse cx="12" cy="19" rx="1"   ry="0.5" fill="#ffc060" fill-opacity="0.35" filter="url(#glw)"/>
+                  <!-- Culet point spark -->
+                  <circle  cx="26" cy="56" r="0.9" fill="white" fill-opacity="0.65" filter="url(#glw)"/>
+                  <!-- Tiny left pavilion flash -->
+                  <ellipse cx="8"  cy="34" rx="0.7" ry="1.4" fill="white" fill-opacity="0.22" filter="url(#spec)" transform="rotate(30,8,34)"/>
+
+                  <!-- ══ LIGHT SWEEP (animated) ══ -->
+                  <rect class="diamond-sweep" x="-8" y="0" width="14" height="58"
+                    fill="url(#sweep-grad)" opacity="0.18" clip-path="url(#diamond-clip)"/>
+                  <defs>
+                    <linearGradient id="sweep-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+                      <stop offset="50%"  stop-color="white" stop-opacity="1"/>
+                      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+            </div>
         </div>
     </nav>
 
