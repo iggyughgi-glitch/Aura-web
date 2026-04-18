@@ -7,12 +7,10 @@
     <meta name="description" content="The world's first AI-powered web browser built for women. Private, safe, and empowering.">
     <meta property="og:title" content="Aura — The Sanctuary">
     <meta property="og:description" content="The world's first AI-powered web browser built for women.">
-    <meta property="og:type" content="website">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -28,397 +26,138 @@
             --white:   #FDFCFA;
             --muted:   #7A7A82;
             --nav-h:   130px;
+            --hud-bg:  #050507;
+            --hud-accent: #00F0FF;
+            --hud-grid: rgba(0,240,255,0.05);
         }
 
-        *, *::before, *::after {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            margin: 0; padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; background: #FAFAF8; color: #0D0D0D; font-family: 'DM Sans', sans-serif; }
 
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            background: #FAFAF8;
-            color: #0D0D0D;
-            font-family: 'DM Sans', sans-serif;
-        }
-
-        /* ── MAIN VIEW ── */
-        #main-view {
+        /* ── HOME VIEW ── */
+        #home-view {
             height: calc(100vh - var(--nav-h));
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-align: center; padding: 0 32px;
+            transition: filter 0.5s ease, opacity 0.4s ease;
+        }
+        #home-view.blurred { filter: blur(8px) brightness(0.85); pointer-events: none; }
+        #home-view.hidden  { opacity: 0; pointer-events: none; }
+
+        .brand { font-family: 'Playfair Display', serif; font-size: clamp(62px,18vw,88px); font-weight: 900; letter-spacing: -3px; line-height: 1; margin-bottom: 10px; color: #0A0A0A; }
+        .tagline { font-size: 13px; color: #888; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; }
+        .waitlist { margin-top: 52px; width: 100%; max-width: 300px; }
+        .waitlist-label { font-size: 10px; text-transform: uppercase; letter-spacing: 4px; font-weight: 700; color: #333; margin-bottom: 8px; }
+        .waitlist-desc { font-size: 12px; color: #888; line-height: 1.6; margin-bottom: 28px; }
+        .input-row { display: flex; align-items: center; border-bottom: 1.5px solid #D0D0D0; padding-bottom: 10px; transition: border-color 0.3s; }
+        .input-row:focus-within { border-color: #0A0A0A; }
+        .email-input { flex: 1; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 14px; color: #0A0A0A; background: transparent; }
+        .email-input::placeholder { color: #BBB; }
+        .btn-submit { background: none; border: none; font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: #0A0A0A; cursor: pointer; padding: 0; transition: color 0.3s, opacity 0.3s; white-space: nowrap; }
+        .btn-submit:disabled { opacity: 0.4; cursor: default; }
+        .live-count { margin-top: 22px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .count-dot { width: 6px; height: 6px; background: var(--teal); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+        .count-num { font-size: 12px; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums; }
+        .count-label { font-size: 10px; color: #AAA; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* ── SEARCH RESULTS VIEW ── */
+        #search-view {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            bottom: var(--nav-h);
+            background: var(--hud-bg);
+            background-image:
+                linear-gradient(var(--hud-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--hud-grid) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 500;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 0 32px;
-            transition: filter 0.5s ease, opacity 0.5s ease;
         }
+        #search-view.visible { opacity: 1; pointer-events: all; }
 
-        .brand {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(62px, 18vw, 88px);
-            font-weight: 900;
-            letter-spacing: -3px;
-            line-height: 1;
-            margin-bottom: 10px;
-            color: #0A0A0A;
-        }
+        .hud-bar { display: flex; align-items: center; gap: 12px; padding: 16px 20px 8px; flex-shrink: 0; }
+        .hud-back { width: 36px; height: 36px; background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--hud-accent); font-size: 16px; flex-shrink: 0; transition: background 0.2s; }
+        .hud-back:active { background: rgba(0,240,255,0.15); }
+        .hud-query-display { flex: 1; font-family: 'Courier New', monospace; font-size: 11px; color: var(--hud-accent); letter-spacing: 2px; opacity: 0.8; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-        .tagline {
-            font-size: 13px;
-            color: #888;
-            font-weight: 400;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        .cards-viewport { flex: 1; display: flex; perspective: 1000px; padding: 20px; gap: 20px; -webkit-overflow-scrolling: touch; }
+        .cards-viewport::-webkit-scrollbar { display: none; }
+        @media (orientation: portrait)  { .cards-viewport { flex-direction: column; overflow-y: auto; overflow-x: hidden; align-items: center; } }
+        @media (orientation: landscape) { .cards-viewport { flex-direction: row; overflow-x: auto; overflow-y: hidden; align-items: center; } }
 
-        /* ── WAITLIST ── */
-        .waitlist {
-            margin-top: 52px;
-            width: 100%;
-            max-width: 300px;
-        }
-
-        .waitlist-label {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .waitlist-desc {
-            font-size: 12px;
-            color: #888;
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-
-        .input-row {
-            display: flex;
-            align-items: center;
-            border-bottom: 1.5px solid #D0D0D0;
-            padding-bottom: 10px;
-            transition: border-color 0.3s;
-        }
-        .input-row:focus-within { border-color: #0A0A0A; }
-
-        .email-input {
-            flex: 1;
-            border: none;
-            outline: none;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            color: #0A0A0A;
-            background: transparent;
-            placeholder-color: #AAA;
-        }
-        .email-input::placeholder { color: #BBB; }
-
-        .btn-submit {
-            background: none;
-            border: none;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: #0A0A0A;
-            cursor: pointer;
-            padding: 0;
-            transition: color 0.3s, opacity 0.3s;
-            white-space: nowrap;
-        }
-        .btn-submit:disabled { opacity: 0.4; cursor: default; }
-
-        .live-count {
-            margin-top: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .count-dot {
-            width: 6px; height: 6px;
-            background: var(--teal);
-            border-radius: 50%;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.4; transform: scale(0.8); }
-        }
-        .count-num {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--teal);
-            font-variant-numeric: tabular-nums;
-        }
-        .count-label {
-            font-size: 10px;
-            color: #AAA;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
+        .tactical-card { flex: 0 0 auto; width: min(280px, 85vw); height: 260px; background: #111114; border: 1px solid rgba(0,240,255,0.15); box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,240,255,0.03); display: flex; flex-direction: column; justify-content: space-between; padding: 22px; position: relative; transform-style: preserve-3d; transition: transform 0.15s; cursor: pointer; border-radius: 4px; }
+        .tactical-card::before, .tactical-card::after { content:''; position:absolute; width:14px; height:14px; }
+        .tactical-card::before { top:-1px; left:-1px; border-top:2px solid var(--hud-accent); border-left:2px solid var(--hud-accent); }
+        .tactical-card::after  { bottom:-1px; right:-1px; border-bottom:2px solid var(--hud-accent); border-right:2px solid var(--hud-accent); }
+        .tactical-card:active  { transform: scale(0.97) !important; }
+        .card-telemetry { font-family:'Courier New',monospace; font-size:10px; color:var(--hud-accent); letter-spacing:1px; }
+        .card-title { font-weight:800; font-size:20px; color:#E0E0E0; margin:8px 0; line-height:1.2; }
+        .card-body  { font-size:12px; color:#666; line-height:1.5; flex:1; margin:4px 0; }
+        .card-url   { font-size:10px; color:rgba(0,240,255,0.5); font-family:'Courier New',monospace; letter-spacing:1px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+        .card-footer{ font-size:10px; color:#444; text-transform:uppercase; letter-spacing:1.5px; margin-top:8px; }
+        .hud-loading { margin: auto; font-family:'Courier New',monospace; font-size:13px; color:var(--hud-accent); letter-spacing:3px; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
         /* ── BOTTOM NAV ── */
-        #bottom-nav {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            height: var(--nav-h);
-            background: var(--black);
-            border-radius: 28px 28px 0 0;
-            padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 18px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-        .tabs::-webkit-scrollbar { display: none; }
-
-        .tab {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            color: var(--muted);
-            white-space: nowrap;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .tab.active { color: #FFF; }
-        .tab[data-tab="beauty"] { color: var(--fashion); opacity: 0.7; }
-        .tab[data-tab="shopping"] { color: var(--gold); opacity: 0.7; }
-        .tab[data-tab="health"] { color: var(--health); opacity: 0.7; }
-
-        .search-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .search-bar {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 22px;
-            padding: 13px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-        .search-bar span:first-child {
-            font-size: 13px;
-            color: var(--muted);
-        }
-        .ai-badge {
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--teal);
-            letter-spacing: 1px;
-        }
-
-        /* ── DIAMOND BUTTON ── */
-        .diamond-btn {
-            width: 52px; height: 52px;
-            background: rgba(201,168,76,0.08);
-            border: 1px solid rgba(201,168,76,0.25);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.15s, background 0.2s;
-            flex-shrink: 0;
-            /* CRITICAL: ensure it's always tappable */
-            position: relative;
-            z-index: 200;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        .diamond-btn:active {
-            transform: scale(0.88);
-            background: rgba(201,168,76,0.15);
-        }
-        .diamond-btn span { font-size: 24px; pointer-events: none; }
+        #bottom-nav { position:fixed; bottom:0; left:0; right:0; height:var(--nav-h); background:var(--black); border-radius:28px 28px 0 0; padding:16px 20px calc(16px + env(safe-area-inset-bottom)); z-index:600; display:flex; flex-direction:column; gap:12px; }
+        .tabs { display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; }
+        .tabs::-webkit-scrollbar { display:none; }
+        .tab { font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); white-space:nowrap; cursor:pointer; transition:color 0.2s; }
+        .tab.active { color:#FFF; }
+        .tab[data-tab="beauty"]   { color:var(--fashion); opacity:0.7; }
+        .tab[data-tab="shopping"] { color:var(--gold);    opacity:0.7; }
+        .tab[data-tab="health"]   { color:var(--health);  opacity:0.7; }
+        .search-row { display:flex; align-items:center; gap:12px; }
+        .search-bar { flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); border-radius:22px; padding:0 18px; height:48px; display:flex; align-items:center; gap:10px; transition:border-color 0.2s; }
+        .search-bar:focus-within { border-color:rgba(0,240,255,0.3); }
+        #search-input { flex:1; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:#DDD; }
+        #search-input::placeholder { color:var(--muted); }
+        .ai-badge { font-size:10px; font-weight:800; color:var(--teal); letter-spacing:1px; white-space:nowrap; }
+        .diamond-btn { width:52px; height:52px; background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.25); border-radius:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform 0.15s,background 0.2s; flex-shrink:0; position:relative; z-index:200; -webkit-user-select:none; user-select:none; }
+        .diamond-btn:active { transform:scale(0.88); background:rgba(201,168,76,0.15); }
+        .diamond-btn span { font-size:24px; pointer-events:none; }
 
         /* ── SANCTUARY PANEL ── */
-        #sanctuary {
-            position: fixed;
-            bottom: -100%;
-            left: 0; right: 0;
-            height: 93%;
-            background: var(--surface);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-radius: 36px 36px 0 0;
-            z-index: 1000;
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding: 20px 22px calc(40px + env(safe-area-inset-bottom));
-            transition: bottom 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-            -webkit-overflow-scrolling: touch;
-        }
-        #sanctuary.open { bottom: 0; }
-
-        /* drag handle */
-        .handle {
-            width: 40px; height: 4px;
-            background: rgba(255,255,255,0.12);
-            border-radius: 10px;
-            margin: 0 auto 28px;
-        }
-
-        .sanctuary-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            font-weight: 900;
-            color: var(--white);
-            margin-bottom: 6px;
-        }
-        .sanctuary-sub {
-            font-size: 13px;
-            color: var(--gold);
-            font-weight: 500;
-            margin-bottom: 32px;
-            line-height: 1.4;
-        }
-
-        .section-label {
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-            margin-top: 28px;
-        }
-
-        /* Feature tiles */
-        .tile {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 16px 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 10px;
-        }
-        .tile-left { flex: 1; min-width: 0; }
-        .tile-tag {
-            font-size: 9px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .tile-tag::before {
-            content: '';
-            width: 5px; height: 5px;
-            border-radius: 50%;
-            background: currentColor;
-            flex-shrink: 0;
-        }
-        .tile-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--white);
-            margin-bottom: 3px;
-        }
-        .tile-desc {
-            font-size: 11px;
-            color: var(--muted);
-            line-height: 1.4;
-        }
-
-        /* Toggles */
-        .toggle {
-            width: 44px; height: 25px;
-            border-radius: 13px;
-            background: rgba(255,255,255,0.1);
-            position: relative;
-            cursor: pointer;
-            transition: background 0.35s;
-            flex-shrink: 0;
-        }
-        .knob {
-            width: 19px; height: 19px;
-            border-radius: 50%;
-            background: #fff;
-            position: absolute;
-            top: 3px; left: 3px;
-            transition: left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-            pointer-events: none;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-        }
-        .toggle.on { background: var(--teal); }
-        .toggle.on .knob { left: 22px; }
-        .toggle.on.fashion { background: var(--fashion); }
-        .toggle.on.health  { background: var(--health); }
-        .toggle.on.berry   { background: var(--berry); }
-
-        /* Accent borders on tiles */
-        .accent-red    { border-left: 3px solid var(--berry); }
-        .accent-purple { border-left: 3px solid var(--fashion); }
-        .accent-pink   { border-left: 3px solid var(--health); }
-        .accent-berry  { border-left: 3px solid var(--berry); }
-
-        .btn-return {
-            width: 100%;
-            padding: 18px;
-            background: var(--gold);
-            color: #000;
-            border: none;
-            border-radius: 18px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            cursor: pointer;
-            margin-top: 28px;
-            transition: opacity 0.2s;
-        }
-        .btn-return:active { opacity: 0.8; }
-
-        /* blur main when panel open */
-        #main-view.blurred {
-            filter: blur(8px) brightness(0.85);
-            pointer-events: none;
-        }
+        #sanctuary { position:fixed; bottom:-100%; left:0; right:0; height:93%; background:var(--surface); backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px); border-radius:36px 36px 0 0; z-index:1000; overflow-y:auto; overflow-x:hidden; padding:20px 22px calc(40px + env(safe-area-inset-bottom)); transition:bottom 0.45s cubic-bezier(0.16,1,0.3,1); -webkit-overflow-scrolling:touch; }
+        #sanctuary.open { bottom:0; }
+        .handle { width:40px; height:4px; background:rgba(255,255,255,0.12); border-radius:10px; margin:0 auto 28px; }
+        .sanctuary-title { font-family:'Playfair Display',serif; font-size:32px; font-weight:900; color:var(--white); margin-bottom:6px; }
+        .sanctuary-sub { font-size:13px; color:var(--gold); font-weight:500; margin-bottom:32px; line-height:1.4; }
+        .section-label { font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase; margin-bottom:12px; margin-top:28px; }
+        .tile { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:20px; padding:16px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+        .tile-left { flex:1; min-width:0; }
+        .tile-tag { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; display:flex; align-items:center; gap:5px; }
+        .tile-tag::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+        .tile-name { font-size:15px; font-weight:700; color:var(--white); margin-bottom:3px; }
+        .tile-desc { font-size:11px; color:var(--muted); line-height:1.4; }
+        .toggle { width:44px; height:25px; border-radius:13px; background:rgba(255,255,255,0.1); position:relative; cursor:pointer; transition:background 0.35s; flex-shrink:0; }
+        .knob { width:19px; height:19px; border-radius:50%; background:#fff; position:absolute; top:3px; left:3px; transition:left 0.35s cubic-bezier(0.16,1,0.3,1); pointer-events:none; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+        .toggle.on { background:var(--teal); } .toggle.on .knob { left:22px; }
+        .toggle.on.fashion { background:var(--fashion); } .toggle.on.health { background:var(--health); } .toggle.on.berry { background:var(--berry); }
+        .accent-red { border-left:3px solid var(--berry); } .accent-purple { border-left:3px solid var(--fashion); } .accent-pink { border-left:3px solid var(--health); } .accent-berry { border-left:3px solid var(--berry); }
+        .btn-return { width:100%; padding:18px; background:var(--gold); color:#000; border:none; border-radius:18px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:28px; transition:opacity 0.2s; }
+        .btn-return:active { opacity:0.8; }
     </style>
 </head>
 <body>
 
-    <!-- ── MAIN VIEW ── -->
-    <div id="main-view">
+    <!-- HOME -->
+    <div id="home-view">
         <h1 class="brand">Aura</h1>
         <p class="tagline">The web browser tailored to women.</p>
-
         <div class="waitlist">
             <p class="waitlist-label">Private Invitation</p>
             <p class="waitlist-desc">Request access to the world's first AI-powered search browser for women. Secure your place in the first live wave.</p>
-
             <div class="input-row">
                 <input type="email" class="email-input" id="email-input" placeholder="Your email address" autocomplete="email">
                 <button class="btn-submit" id="submit-btn" onclick="handleSignup()">Request</button>
             </div>
-
             <div class="live-count">
                 <div class="count-dot"></div>
                 <span class="count-num" id="count-num">—</span>
@@ -427,80 +166,51 @@
         </div>
     </div>
 
-    <!-- ── SANCTUARY PANEL ── -->
+    <!-- SEARCH RESULTS -->
+    <div id="search-view">
+        <div class="hud-bar">
+            <div class="hud-back" onclick="closeSearch()">←</div>
+            <div class="hud-query-display" id="hud-query-text">AURA_CORE // SEARCHING...</div>
+        </div>
+        <div class="cards-viewport" id="cards-viewport"></div>
+    </div>
+
+    <!-- SANCTUARY PANEL -->
     <div id="sanctuary">
         <div class="handle"></div>
-
         <h2 class="sanctuary-title">Diamond Sanctuary</h2>
         <p class="sanctuary-sub">We're not just AI powered,<br>we're empowering women.</p>
-
-        <!-- Shield System -->
-        <p class="section-label" style="color: var(--berry);">Shield System</p>
-
+        <p class="section-label" style="color:var(--berry)">Shield System</p>
         <div class="tile accent-red">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--berry);">Active Scanning</div>
-                <div class="tile-name">Anti-Stalking Shield</div>
-                <div class="tile-desc">Detects unauthorized location tracking and digital shadowing.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--berry)">Active Scanning</div><div class="tile-name">Anti-Stalking Shield</div><div class="tile-desc">Detects unauthorized location tracking and digital shadowing.</div></div>
             <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
         <div class="tile">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--muted);">Neural Filtering</div>
-                <div class="tile-name">Harassment Filter</div>
-                <div class="tile-desc">AI scrubs toxic intent and coordinated pile-ons in real-time.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--muted)">Neural Filtering</div><div class="tile-name">Harassment Filter</div><div class="tile-desc">AI scrubs toxic intent and coordinated pile-ons in real-time.</div></div>
             <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
-        <!-- Personal Vaults -->
-        <p class="section-label" style="color: var(--fashion);">Personal Vaults</p>
-
+        <p class="section-label" style="color:var(--fashion)">Personal Vaults</p>
         <div class="tile accent-purple">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--fashion);">Style Curation</div>
-                <div class="tile-name">Fashion Vault</div>
-                <div class="tile-desc">Private, AI-curated aesthetic boards hidden from trackers.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--fashion)">Style Curation</div><div class="tile-name">Fashion Vault</div><div class="tile-desc">Private, AI-curated aesthetic boards hidden from trackers.</div></div>
             <div class="toggle on fashion" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
         <div class="tile accent-pink">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--health);">Secure Vitals</div>
-                <div class="tile-name">Health Vault</div>
-                <div class="tile-desc">Encrypted cycle and symptom sanctuary. Total privacy.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--health)">Secure Vitals</div><div class="tile-name">Health Vault</div><div class="tile-desc">Encrypted cycle and symptom sanctuary. Total privacy.</div></div>
             <div class="toggle on health" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
-        <!-- Guardian System -->
-        <p class="section-label" style="color: var(--gold);">Guardian System</p>
-
+        <p class="section-label" style="color:var(--gold)">Guardian System</p>
         <div class="tile accent-berry">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--berry);">Live Protection</div>
-                <div class="tile-name">Date Mode</div>
-                <div class="tile-desc">Emergency exit strategies, alibi calls, and location pings.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--berry)">Live Protection</div><div class="tile-name">Date Mode</div><div class="tile-desc">Emergency exit strategies, alibi calls, and location pings.</div></div>
             <div class="toggle on berry" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
         <div class="tile">
-            <div class="tile-left">
-                <div class="tile-tag" style="color: var(--muted);">Safety Timer</div>
-                <div class="tile-name">Walking Alone Mode</div>
-                <div class="tile-desc">Path-tracking with automatic check-in safety alerts.</div>
-            </div>
+            <div class="tile-left"><div class="tile-tag" style="color:var(--muted)">Safety Timer</div><div class="tile-name">Walking Alone Mode</div><div class="tile-desc">Path-tracking with automatic check-in safety alerts.</div></div>
             <div class="toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
         </div>
-
         <button class="btn-return" onclick="closePanel()">Return to Aura</button>
     </div>
 
-    <!-- ── BOTTOM NAV ── -->
+    <!-- BOTTOM NAV -->
     <nav id="bottom-nav">
         <div class="tabs">
             <div class="tab active" data-tab="web">Web</div>
@@ -510,128 +220,156 @@
             <div class="tab" data-tab="health">Health</div>
         </div>
         <div class="search-row">
-            <div class="search-bar" onclick="alert('Aura Search activates at launch.')">
-                <span>Ask Aura...</span>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
                 <span class="ai-badge">● AI</span>
             </div>
-            <div class="diamond-btn" id="diamond-btn">
-                <span>💎</span>
-            </div>
+            <div class="diamond-btn" id="diamond-btn"><span>💎</span></div>
         </div>
     </nav>
 
     <script>
-        // ── SUPABASE SETUP (safe — UI never crashes if this fails) ──
+        // ══ SUPABASE (safe — never crashes UI) ══
         let db = null;
         try {
             const SUPABASE_URL = 'https://inkvqoerebpxozxwogmj.supabase.co';
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Zxb2VyZWJweG96eHdvZ21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTM2MTQsImV4cCI6MjA5MTk2OTYxNH0.lZzUdD2bbtUoaDNRoSmKHL03cJ4An3Xt-8WBelHlcQQ';
             db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        } catch(e) {
-            console.warn('Supabase init failed:', e.message);
-        }
+        } catch(e) { console.warn('Supabase init failed:', e.message); }
 
-        // ── PANEL OPEN / CLOSE ──
-        const panel   = document.getElementById('sanctuary');
-        const mainView = document.getElementById('main-view');
+        // ══ SANCTUARY PANEL ══
+        const panel     = document.getElementById('sanctuary');
+        const homeView  = document.getElementById('home-view');
         const diamondBtn = document.getElementById('diamond-btn');
-
-        function openPanel() {
-            panel.classList.add('open');
-            mainView.classList.add('blurred');
-        }
-
-        function closePanel() {
-            panel.classList.remove('open');
-            mainView.classList.remove('blurred');
-        }
-
-        // Use both click and touchend for maximum mobile compatibility
+        function openPanel()  { panel.classList.add('open'); homeView.classList.add('blurred'); }
+        function closePanel() { panel.classList.remove('open'); homeView.classList.remove('blurred'); }
+        function toggleSwitch(el) { el.classList.toggle('on'); }
         diamondBtn.addEventListener('click', openPanel);
-        diamondBtn.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            openPanel();
+        diamondBtn.addEventListener('touchend', e => { e.preventDefault(); openPanel(); });
+
+        // ══ SEARCH ══
+        const searchView    = document.getElementById('search-view');
+        const cardsViewport = document.getElementById('cards-viewport');
+        const hudQueryText  = document.getElementById('hud-query-text');
+        const searchInput   = document.getElementById('search-input');
+
+        // ─────────────────────────────────────────
+        // 🔌 PLUG IN REAL SEARCH HERE WHEN READY
+        // Just replace the contents of this function.
+        // Return an array of: { id, title, desc, url }
+        // ─────────────────────────────────────────
+        async function fetchSearchResults(query) {
+            // TODO: swap dummy data for real API call:
+            // const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+            // return await res.json();
+
+            await new Promise(r => setTimeout(r, 600)); // simulate latency
+            return [
+                { id:"01", title:"Target Acquired",  desc:"First node identified in the data stream. Privacy protocols holding steady.", url:"aura://secure/01" },
+                { id:"02", title:"Quantum Routing",  desc:"Bypassing standard trackers. Routing through encrypted proxy networks.", url:"aura://secure/02" },
+                { id:"03", title:"Data Scrubbing",   desc:"Removing 43 ad-trackers from the destination URL. Safe payload ready.", url:"aura://secure/03" },
+                { id:"04", title:"Node Alpha",       desc:"Historical data retrieval complete. Cross-referencing secure databases.", url:"aura://secure/04" },
+                { id:"05", title:"Signal Lost",      desc:"Attempted interference blocked by Aura Shield. Connection re-established.", url:"aura://secure/05" },
+                { id:"06", title:"Telemetry Sync",   desc:"Finalizing data array. UI rendering engine at maximum efficiency.", url:"aura://secure/06" }
+            ];
+        }
+
+        async function runSearch(query) {
+            if (!query.trim()) return;
+            homeView.classList.add('hidden');
+            searchView.classList.add('visible');
+            hudQueryText.textContent = `QUERY: "${query.toUpperCase()}"`;
+            cardsViewport.innerHTML = '<div class="hud-loading">SCANNING...</div>';
+            try {
+                const results = await fetchSearchResults(query);
+                cardsViewport.innerHTML = '';
+                results.forEach(data => {
+                    const card = document.createElement('div');
+                    card.className = 'tactical-card';
+                    card.innerHTML = `
+                        <div class="card-telemetry">OBJ_${data.id} // SECURE</div>
+                        <div class="card-title">${data.title}</div>
+                        <div class="card-body">${data.desc}</div>
+                        <div class="card-url">${data.url}</div>
+                        <div class="card-footer">TAP TO ENGAGE →</div>
+                    `;
+                    card.addEventListener('click', () => {
+                        // TODO: navigate to result when live
+                        console.log('Open:', data.url);
+                    });
+                    cardsViewport.appendChild(card);
+                });
+                applyParallax();
+            } catch(e) {
+                cardsViewport.innerHTML = '<div class="hud-loading">CONNECTION LOST</div>';
+            }
+        }
+
+        function closeSearch() {
+            searchView.classList.remove('visible');
+            homeView.classList.remove('hidden');
+            searchInput.value = '';
+        }
+
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); runSearch(searchInput.value); }
         });
 
-        // ── TOGGLE SWITCHES ──
-        function toggleSwitch(el) {
-            el.classList.toggle('on');
+        // 3D parallax on scroll
+        function applyParallax() {
+            const cards = cardsViewport.querySelectorAll('.tactical-card');
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const center = isPortrait ? window.innerHeight / 2 : window.innerWidth / 2;
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const cardCenter = isPortrait ? rect.top + rect.height/2 : rect.left + rect.width/2;
+                let rot = Math.max(-40, Math.min(40, ((cardCenter - center) / center) * 40));
+                card.style.transform = isPortrait ? `rotateX(${-rot}deg)` : `rotateY(${rot}deg)`;
+            });
         }
+        cardsViewport.addEventListener('scroll', applyParallax);
+        window.addEventListener('resize', applyParallax);
 
-        // ── LIVE COUNT ──
+        // ══ WAITLIST ══
         async function fetchCount() {
             const el = document.getElementById('count-num');
             if (!db) { el.textContent = '—'; return; }
             try {
-                const { count, error } = await db
-                    .from('waitlist')
-                    .select('*', { count: 'exact', head: true });
-                if (!error && count !== null) {
-                    el.textContent = count.toLocaleString();
-                }
-            } catch(e) {
-                el.textContent = '—';
-            }
+                const { count, error } = await db.from('waitlist').select('*', { count:'exact', head:true });
+                if (!error && count !== null) el.textContent = count.toLocaleString();
+            } catch(e) { el.textContent = '—'; }
         }
 
-        // ── SIGNUP ──
         async function handleSignup() {
             const emailInput = document.getElementById('email-input');
             const btn = document.getElementById('submit-btn');
             const email = emailInput.value.trim();
-
-            if (!email || !email.includes('@')) {
-                emailInput.focus();
-                return;
-            }
-
-            btn.textContent = '...';
-            btn.disabled = true;
-
+            if (!email || !email.includes('@')) { emailInput.focus(); return; }
+            btn.textContent = '...'; btn.disabled = true;
             if (!db) {
-                // No DB — still give user feedback
-                btn.textContent = 'Secured';
-                btn.style.color = 'var(--teal)';
-                emailInput.disabled = true;
-                localStorage.setItem('aura_secured', 'true');
-                return;
+                btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)';
+                emailInput.disabled = true; localStorage.setItem('aura_secured','true'); return;
             }
-
             try {
                 const { error } = await db.from('waitlist').insert([{ email }]);
-                if (error && error.code === '23505') {
-                    btn.textContent = 'Secured ✓';
-                } else if (error) {
-                    btn.textContent = 'Error';
-                    btn.disabled = false;
-                    console.error(error);
-                    return;
-                } else {
-                    btn.textContent = 'Secured ✓';
-                    btn.style.color = 'var(--teal)';
-                    emailInput.disabled = true;
-                    localStorage.setItem('aura_secured', 'true');
-                    fetchCount();
+                if (error && error.code === '23505') { btn.textContent = 'Secured ✓'; }
+                else if (error) { btn.textContent = 'Retry'; btn.disabled = false; return; }
+                else {
+                    btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)';
+                    emailInput.disabled = true; localStorage.setItem('aura_secured','true'); fetchCount();
                 }
-            } catch(e) {
-                btn.textContent = 'Retry';
-                btn.disabled = false;
-            }
+            } catch(e) { btn.textContent = 'Retry'; btn.disabled = false; }
         }
 
-        // Allow pressing Enter to submit
-        document.getElementById('email-input').addEventListener('keydown', function(e) {
+        document.getElementById('email-input').addEventListener('keydown', e => {
             if (e.key === 'Enter') { e.preventDefault(); handleSignup(); }
         });
 
-        // ── ON LOAD ──
-        window.addEventListener('load', function() {
+        window.addEventListener('load', () => {
             fetchCount();
             if (localStorage.getItem('aura_secured') === 'true') {
                 const btn = document.getElementById('submit-btn');
-                btn.textContent = 'Secured ✓';
-                btn.style.color = 'var(--teal)';
-                btn.disabled = true;
+                btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)'; btn.disabled = true;
                 document.getElementById('email-input').disabled = true;
             }
         });
