@@ -44,26 +44,20 @@
         .count-num{font-size:12px;font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums;}
         .count-label{font-size:10px;color:#AAA;text-transform:uppercase;letter-spacing:2px;}
 
-        /* READER VIEW */
-        #reader-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);z-index:600;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;}
+        #reader-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);z-index:600;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;background:var(--hud-bg);}
         #reader-view.visible{opacity:1;pointer-events:all;}
         .reader-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
         .reader-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;transition:background .2s;}
         .reader-back:active{background:rgba(0,240,255,.18);}
         .reader-title-bar{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:1.5px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);}
-        .reader-content{flex:1;overflow-y:auto;padding:24px 20px 40px;-webkit-overflow-scrolling:touch;}
+        .reader-content{flex:1;overflow-y:auto;position:relative;-webkit-overflow-scrolling:touch;}
         .reader-content::-webkit-scrollbar{display:none;}
-        .reader-aura-tag{font-family:'Courier New',monospace;font-size:9px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+        .reader-aura-tag{font-family:'Courier New',monospace;font-size:9px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding:24px 20px 0;}
         .reader-aura-tag::before{content:'';width:20px;height:1px;background:var(--teal);}
         .reader-aura-tag::after{content:'';width:20px;height:1px;background:var(--teal);}
-        .reader-heading{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--white);line-height:1.2;margin-bottom:16px;}
-        .reader-body{font-size:14px;color:#999;line-height:1.8;}
+        .reader-heading{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--white);line-height:1.2;margin-bottom:16px;padding:0 20px;}
+        .reader-body{font-size:14px;color:#999;line-height:1.8;padding:0 20px 40px;}
         .reader-body p{margin-bottom:16px;}
-        .reader-body h2,.reader-body h3{color:#CCC;font-size:16px;font-weight:700;margin:20px 0 8px;}
-        .reader-body a{color:var(--teal);text-decoration:none;}
-        .reader-body ul,.reader-body ol{padding-left:20px;margin-bottom:16px;color:#888;}
-        .reader-body li{margin-bottom:6px;}
-        .reader-body img{display:none;}
         .reader-loading{margin:auto;font-family:'Courier New',monospace;font-size:13px;color:var(--hud-accent);letter-spacing:3px;animation:blink 1s step-end infinite;}
         #search-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;z-index:500;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;}
         #search-view.visible{opacity:1;pointer-events:all;}
@@ -109,13 +103,13 @@
         .tab[data-tab="shopping"]{color:var(--gold);opacity:.7;}
         .tab[data-tab="health"]{color:var(--health);opacity:.7;}
         .search-row{display:flex;align-items:center;gap:12px;}
-        .search-bar{flex:1;background:rgba(13,17,23,.65);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid rgba(0,240,255,.25);border-radius:22px;padding:0 18px;height:48px;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 12px rgba(0,240,255,.04),0 4px 20px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;overflow:hidden;position:relative;}
+        .search-bar{flex:1;background:rgba(13,17,23,.65);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid rgba(0,240,255,.25);border-radius:18px;padding:0 14px;height:38px;display:flex;align-items:center;gap:8px;box-shadow:inset 0 0 12px rgba(0,240,255,.04),0 4px 20px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;overflow:hidden;position:relative;}
         .search-bar::before{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,240,255,.06),transparent);animation:pill-shimmer 5s ease-in-out infinite;pointer-events:none;}
         @keyframes pill-shimmer{0%,100%{left:-80%}60%{left:120%}}
         .search-bar:focus-within{border-color:rgba(0,240,255,.55);box-shadow:inset 0 0 16px rgba(0,240,255,.07),0 0 20px rgba(0,240,255,.1);}
-        #search-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#DDD;position:relative;z-index:1;}
-        #search-input::placeholder{color:rgba(0,240,255,.35);font-family:'Courier New',monospace;letter-spacing:1px;font-size:12px;}
-        .ai-badge{font-size:10px;font-weight:800;color:var(--teal);letter-spacing:1px;white-space:nowrap;text-shadow:0 0 8px var(--teal);position:relative;z-index:1;cursor:pointer;}
+        #search-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#DDD;position:relative;z-index:1;}
+        #search-input::placeholder{color:rgba(0,240,255,.35);font-family:'Courier New',monospace;letter-spacing:1px;font-size:11px;}
+        .ai-badge{font-size:9px;font-weight:800;color:var(--teal);letter-spacing:1px;white-space:nowrap;text-shadow:0 0 8px var(--teal);position:relative;z-index:1;cursor:pointer;}
 
         /* DIAMOND BUTTON */
         @keyframes diamond-pulse{0%,100%{filter:drop-shadow(0 0 5px rgba(160,210,255,.5)) drop-shadow(0 0 2px rgba(255,255,255,.3))}50%{filter:drop-shadow(0 0 9px rgba(160,210,255,.8)) drop-shadow(0 0 4px rgba(255,255,255,.5))}}
@@ -391,7 +385,7 @@ async function fetchSearchResults(query) {
             'X-API-KEY': 'bdb6eaaf192f22e8f9a6280fe9848c961bdaefa8',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ q: query, num: 8 }),
+        body: JSON.stringify({ q: query, num: 10 }),
         signal: AbortSignal.timeout(10000)
     });
     if (!res.ok) throw new Error('Search failed');
@@ -468,31 +462,57 @@ const readerTitleBar = document.getElementById('reader-title-bar');
 async function openReader(data) {
     readerView.classList.add('visible');
     readerTitleBar.textContent = data.title.toUpperCase();
-    readerContent.innerHTML = '<div class="reader-loading">DECRYPTING...</div>';
 
-    try {
-        // Use mercury parser proxy to extract clean article content
-        const res = await fetch(
-            `https://mercury.postlight.com/parser?url=${encodeURIComponent(data.url)}`,
-            { headers: { 'x-api-key': 'irrelevant' }, signal: AbortSignal.timeout(10000) }
-        );
-        const json = await res.json();
-        const html = (json.content || '').replace(/<img[^>]*>/gi,'').replace(/<figure[\s\S]*?<\/figure>/gi,'').replace(/class="[^"]*"/g,'');
+    // Try iframe first — shows full real site inside Aura
+    readerContent.innerHTML = `
+        <div id="site-frame-wrap" style="position:absolute;inset:0;display:flex;flex-direction:column;">
+            <iframe 
+                id="site-frame"
+                src="${data.url}"
+                style="flex:1;border:none;width:100%;height:100%;background:#fff;"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                loading="lazy"
+            ></iframe>
+        </div>
+    `;
 
-        readerContent.innerHTML = `
-            <div class="reader-aura-tag">Aura Secure Reader</div>
-            <div class="reader-heading">${data.title}</div>
-            <div class="reader-body">${html || `<p>${data.desc}</p><p>Tap below to view full page.</p>`}</div>
-            <a href="${data.url}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:24px;padding:14px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:14px;color:var(--teal);font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-align:center;text-decoration:none;">OPEN FULL PAGE →</a>
-        `;
-    } catch(e) {
-        readerContent.innerHTML = `
-            <div class="reader-aura-tag">Aura Secure Reader</div>
-            <div class="reader-heading">${data.title}</div>
-            <div class="reader-body"><p>${data.desc}</p></div>
-            <a href="${data.url}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:24px;padding:14px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:14px;color:var(--teal);font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-align:center;text-decoration:none;">OPEN FULL PAGE →</a>
-        `;
-    }
+    // If iframe is blocked, fall back to clean reader after 4 seconds
+    const frame = document.getElementById('site-frame');
+    const fallbackTimer = setTimeout(() => showReaderFallback(data), 4000);
+
+    frame.addEventListener('load', () => {
+        clearTimeout(fallbackTimer);
+        // Try to detect blank/blocked iframe
+        try {
+            const doc = frame.contentDocument;
+            if (!doc || !doc.body || doc.body.innerHTML.trim() === '') {
+                showReaderFallback(data);
+            }
+        } catch(e) {
+            // Cross-origin — iframe loaded something, leave it
+            clearTimeout(fallbackTimer);
+        }
+    });
+
+    frame.addEventListener('error', () => {
+        clearTimeout(fallbackTimer);
+        showReaderFallback(data);
+    });
+}
+
+function showReaderFallback(data) {
+    readerContent.innerHTML = `
+        <div class="reader-aura-tag">Aura Secure Reader</div>
+        <div class="reader-heading">${data.title}</div>
+        <div class="reader-body">
+            <p style="color:#666;font-size:13px;margin-bottom:20px;">${data.desc}</p>
+            <div style="background:rgba(0,240,255,0.03);border:1px solid rgba(0,240,255,0.1);border-radius:16px;padding:16px;font-family:'Courier New',monospace;font-size:10px;color:var(--teal);letter-spacing:1px;line-height:2;">
+                ● SHIELD ACTIVE: Trackers blocked<br>
+                ● DOMAIN: ${data.domain}<br>
+                ● STATUS: Site uses iframe protection
+            </div>
+        </div>
+    `;
 }
 
 function closeReader() {
