@@ -385,28 +385,25 @@ const searchInput = document.getElementById('search-input');
 
 // Wikipedia search — free, no keys, CORS-enabled natively
 async function fetchSearchResults(query) {
-    const params = new URLSearchParams({
-        action: 'query',
-        list: 'search',
-        srsearch: query,
-        srlimit: '8',
-        utf8: '1',
-        format: 'json',
-        origin: '*'
-    });
-    const res = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, {
+    const res = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: {
+            'X-API-KEY': 'bdb6eaaf192f22e8f9a6280fe9848c961bdaefa8',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ q: query, num: 8 }),
         signal: AbortSignal.timeout(10000)
     });
     if (!res.ok) throw new Error('Search failed');
     const data = await res.json();
-    const items = data.query?.search || [];
+    const items = data.organic || [];
     if (items.length === 0) throw new Error('NO_RESULTS');
     return items.map((r, i) => ({
         id: String(i + 1).padStart(2, '0'),
         title: r.title,
-        desc: r.snippet.replace(/<[^>]*>/g, '').slice(0, 180),
-        url: `https://en.wikipedia.org/wiki/${encodeURIComponent(r.title)}`,
-        domain: 'wikipedia.org'
+        desc: r.snippet || r.title,
+        url: r.link,
+        domain: (() => { try { return new URL(r.link).hostname.replace('www.',''); } catch { return ''; } })()
     }));
 }
 
@@ -474,49 +471,26 @@ async function openReader(data) {
     readerContent.innerHTML = '<div class="reader-loading">DECRYPTING...</div>';
 
     try {
-        // Fetch full Wikipedia article content via API
-        const params = new URLSearchParams({
-            action: 'query',
-            titles: data.title,
-            prop: 'extracts',
-            exintro: '0',
-            explaintext: '0',
-            format: 'json',
-            origin: '*'
-        });
-        const res = await fetch(`https://en.wikipedia.org/w/api.php?${params}`, {
-            signal: AbortSignal.timeout(10000)
-        });
+        // Use mercury parser proxy to extract clean article content
+        const res = await fetch(
+            `https://mercury.postlight.com/parser?url=${encodeURIComponent(data.url)}`,
+            { headers: { 'x-api-key': 'irrelevant' }, signal: AbortSignal.timeout(10000) }
+        );
         const json = await res.json();
-        const pages = json.query.pages;
-        const page = pages[Object.keys(pages)[0]];
-        const html = page.extract || '<p>No content available.</p>';
-
-        // Strip Wikipedia-specific elements, keep clean prose
-        const cleaned = html
-            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-            .replace(/class="[^"]*"/g, '')
-            .replace(/id="[^"]*"/g, '')
-            .replace(/<table[\s\S]*?<\/table>/gi, '')
-            .replace(/<figure[\s\S]*?<\/figure>/gi, '')
-            .replace(/<img[^>]*>/gi, '')
-            .replace(/<span[^>]*>(.*?)<\/span>/gi, '$1')
-            .replace(/<div[^>]*>/gi, '')
-            .replace(/<\/div>/gi, '')
-            .replace(/\n{3,}/g, '\n\n')
-            .trim();
+        const html = (json.content || '').replace(/<img[^>]*>/gi,'').replace(/<figure[\s\S]*?<\/figure>/gi,'').replace(/class="[^"]*"/g,'');
 
         readerContent.innerHTML = `
             <div class="reader-aura-tag">Aura Secure Reader</div>
             <div class="reader-heading">${data.title}</div>
-            <div class="reader-body">${cleaned}</div>
+            <div class="reader-body">${html || `<p>${data.desc}</p><p>Tap below to view full page.</p>`}</div>
+            <a href="${data.url}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:24px;padding:14px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:14px;color:var(--teal);font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-align:center;text-decoration:none;">OPEN FULL PAGE →</a>
         `;
     } catch(e) {
         readerContent.innerHTML = `
             <div class="reader-aura-tag">Aura Secure Reader</div>
             <div class="reader-heading">${data.title}</div>
             <div class="reader-body"><p>${data.desc}</p></div>
+            <a href="${data.url}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:24px;padding:14px;background:rgba(0,240,255,0.06);border:1px solid rgba(0,240,255,0.2);border-radius:14px;color:var(--teal);font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;text-align:center;text-decoration:none;">OPEN FULL PAGE →</a>
         `;
     }
 }
