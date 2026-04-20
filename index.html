@@ -21,11 +21,11 @@
         :root {
             --black:#040406; --surface:rgba(10,10,16,0.98); --border:rgba(255,255,255,0.07);
             --gold:#C9A84C; --teal:#4EADA0; --berry:#A0426E; --fashion:#B87ED4; --health:#E8917A;
-            --white:#FDFCFA; --muted:#7A7A82; --nav-h:130px; --peek-h:72px;
+            --white:#FDFCFA; --muted:#7A7A82; --nav-h:80px; --peek-h:80px;
             --hud-bg:#050507; --hud-accent:#00F0FF; --hud-grid:rgba(0,240,255,0.05);
         }
         *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
-        html,body{height:100%;overflow:hidden;background:#FAFAF8;color:#0D0D0D;font-family:'DM Sans',sans-serif;}
+        html,body{height:100%;overflow:hidden;background:#050507;color:#0D0D0D;font-family:'DM Sans',sans-serif;}
 
         /* HOME */
         #home-view{height:calc(100vh - var(--nav-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px;transition:filter .5s ease,opacity .4s ease;}
@@ -330,13 +330,6 @@
 <!-- BOTTOM NAV -->
 <nav id="bottom-nav">
     <div id="nav-pull-handle"></div>
-    <div class="tabs">
-        <div class="tab active" data-tab="web">Web</div>
-        <div class="tab" data-tab="ai">AI</div>
-        <div class="tab" data-tab="beauty">Beauty</div>
-        <div class="tab" data-tab="shopping">Shopping</div>
-        <div class="tab" data-tab="health">Health</div>
-    </div>
     <div class="search-row">
         <div class="search-bar">
             <input type="text" inputmode="search" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -410,8 +403,19 @@ const diamondBtn = document.getElementById('diamond-btn');
 function openPanel() { panel.classList.add('open'); homeView.classList.add('blurred'); }
 function closePanel() { panel.classList.remove('open'); homeView.classList.remove('blurred'); }
 function toggleSwitch(el) { el.classList.toggle('on'); }
-diamondBtn.addEventListener('click', openPanel);
-diamondBtn.addEventListener('touchend', e => { e.preventDefault(); openPanel(); });
+
+// Diamond btn: if sheet is collapsed → expand it; if expanded → open sanctuary
+diamondBtn.addEventListener('click', () => {
+    const nav = document.getElementById('bottom-nav');
+    const isCollapsed = nav.classList.contains('sheet-collapsed');
+    if (isCollapsed) {
+        // Re-expand the sheet — trigger the handle toggle
+        document.getElementById('nav-pull-handle').click();
+    } else {
+        openPanel();
+    }
+});
+diamondBtn.addEventListener('touchend', e => { e.preventDefault(); diamondBtn.click(); });
 
 // ── SEARCH ──
 const searchView = document.getElementById('search-view');
@@ -637,7 +641,7 @@ window.addEventListener('load', () => {
 (function() {
     const nav        = document.getElementById('bottom-nav');
     const handle     = document.getElementById('nav-pull-handle');
-    const PEEK       = 72;   // px visible when collapsed (search pill only)
+    const PEEK       = 80;   // px visible when collapsed (search pill only)
     const SNAP_UP_AT = 120;  // drag this many px up → expand
     const SNAP_DN_AT = 60;   // drag this many px down from expanded → collapse
 
