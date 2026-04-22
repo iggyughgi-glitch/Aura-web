@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Aura — The Sanctuary</title>
-    <meta name="description" content="Your lifestyle sanctuary on the internet.">
+    <meta name="description" content="The world's first AI-powered web browser built for women.">
+    <meta property="og:title" content="Aura — The Sanctuary">
+    <meta property="og:description" content="The world's first AI-powered web browser built for women.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -16,265 +18,393 @@
             --white:#FDFCFA; --muted:#7A7A82; --nav-h:130px;
             --hud-bg:#050507; --hud-accent:#00F0FF; --hud-grid:rgba(0,240,255,0.05);
         }
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
         html,body{height:100%;overflow:hidden;background:#FAFAF8;color:#0D0D0D;font-family:'DM Sans',sans-serif;}
 
-        /* === ORIGINAL CSS (preserved) + new vertical tabs styling === */
+        /* HOME */
         #home-view{height:calc(100vh - var(--nav-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px;transition:filter .5s ease,opacity .4s ease;}
         #home-view.blurred{filter:blur(8px) brightness(.85);pointer-events:none;}
         #home-view.hidden{opacity:0;pointer-events:none;}
         .brand-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
-        .brand-diamond{animation:diamond-pulse 3s ease-in-out infinite;flex-shrink:0;margin-top:6px;}
+        .brand-diamond{animation:diamond-pulse 3s ease-in-out infinite;flex-shrink:0;margin-top:6px;color:#0A0A0A;}
         .brand{font-family:'Playfair Display',serif;font-size:clamp(62px,18vw,88px);font-weight:900;letter-spacing:-3px;line-height:1;color:#0A0A0A;}
         .tagline{font-size:13px;color:#888;font-weight:400;letter-spacing:2px;text-transform:uppercase;}
+        .waitlist{margin-top:52px;width:100%;max-width:300px;}
+        .waitlist-label{font-size:10px;text-transform:uppercase;letter-spacing:4px;font-weight:700;color:#333;margin-bottom:8px;}
+        .waitlist-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:28px;}
+        .input-row{display:flex;align-items:center;border-bottom:1.5px solid #D0D0D0;padding-bottom:10px;transition:border-color .3s;}
+        .input-row:focus-within{border-color:#0A0A0A;}
+        .email-input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:#0A0A0A;background:transparent;}
+        .email-input::placeholder{color:#BBB;}
+        .btn-submit{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#0A0A0A;cursor:pointer;padding:0;transition:color .3s,opacity .3s;white-space:nowrap;}
+        .btn-submit:disabled{opacity:.4;cursor:default;}
+        .live-count{margin-top:22px;display:flex;align-items:center;justify-content:center;gap:8px;}
+        .count-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+        .count-num{font-size:12px;font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums;}
+        .count-label{font-size:10px;color:#AAA;text-transform:uppercase;letter-spacing:2px;}
 
+        /* READER VIEW */
+        #reader-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);z-index:600;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;background:var(--hud-bg);}
+        #reader-view.visible{opacity:1;pointer-events:all;}
+        .reader-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
+        .reader-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;transition:background .2s;}
+        .reader-back:active{background:rgba(0,240,255,.18);}
+        .reader-title-bar{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:1.5px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);}
+        .reader-content{flex:1;overflow-y:auto;position:relative;-webkit-overflow-scrolling:touch;}
+        .reader-content::-webkit-scrollbar{display:none;}
+        .reader-aura-tag{font-family:'Courier New',monospace;font-size:9px;color:var(--teal);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;padding:24px 20px 0;}
+        .reader-aura-tag::before{content:'';width:20px;height:1px;background:var(--teal);}
+        .reader-aura-tag::after{content:'';width:20px;height:1px;background:var(--teal);}
+        .reader-heading{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--white);line-height:1.2;margin-bottom:16px;padding:0 20px;}
+        .reader-body{font-size:14px;color:#999;line-height:1.8;padding:0 20px 40px;}
+        .reader-body p{margin-bottom:16px;}
+        .reader-loading{margin:auto;font-family:'Courier New',monospace;font-size:13px;color:var(--hud-accent);letter-spacing:3px;animation:blink 1s step-end infinite;}
+
+        /* SEARCH VIEW */
+        #search-view{position:fixed;top:0;left:0;right:0;bottom:var(--nav-h);background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;z-index:500;opacity:0;pointer-events:none;transition:opacity .35s ease;display:flex;flex-direction:column;}
+        #search-view.visible{opacity:1;pointer-events:all;}
+
+        /* HUD BAR */
+        .hud-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);box-shadow:inset 0 -1px 0 rgba(0,240,255,.06),inset 0 1px 0 rgba(255,255,255,.05),0 8px 32px rgba(0,0,0,.5);}
+        @media(orientation:portrait){.hud-bar{padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}}
+        @media(orientation:landscape){.hud-bar{padding:10px 16px;}}
+        .hud-bar::after{content:'';position:absolute;top:0;left:-80%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent);transform:skewX(-15deg);animation:hud-shimmer 7s ease-in-out infinite;pointer-events:none;z-index:0;}
+        @keyframes hud-shimmer{0%,100%{left:-80%}55%{left:130%}}
+        .hud-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;transition:background .2s;position:relative;z-index:1;}
+        .hud-back:active{background:rgba(0,240,255,.18);}
+        .hud-query-display{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:2px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);position:relative;z-index:1;}
+
+        /* CARDS */
+        .cards-viewport{flex:1;display:flex;perspective:1000px;padding:20px;gap:20px;-webkit-overflow-scrolling:touch;}
+        .cards-viewport::-webkit-scrollbar{display:none;}
+        @media(orientation:portrait){.cards-viewport{flex-direction:column;overflow-y:auto;overflow-x:hidden;align-items:center;}}
+        @media(orientation:landscape){.cards-viewport{flex-direction:row;overflow-x:auto;overflow-y:hidden;align-items:center;}}
         .tactical-card{flex:0 0 auto;width:min(280px,85vw);min-height:220px;background:transparent;border:1px solid rgba(0,240,255,.15);box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 0 30px rgba(0,240,255,.02);display:flex;flex-direction:column;justify-content:space-between;padding:22px;position:relative;transform-style:preserve-3d;transition:transform .15s;cursor:pointer;border-radius:4px;}
-        .affiliate-card{background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:16px;padding:14px;margin-top:12px;display:flex;align-items:center;gap:12px;}
-        .affiliate-card .shop-btn{background:var(--gold);color:#000;padding:8px 16px;border-radius:9999px;font-size:11px;font-weight:700;white-space:nowrap;}
-        .paywall-teaser{text-align:center;padding:40px 20px;background:rgba(255,255,255,.03);border:1px dashed var(--gold);border-radius:20px;color:#888;}
+        .tactical-card::before,.tactical-card::after{content:'';position:absolute;width:14px;height:14px;}
+        .tactical-card::before{top:-1px;left:-1px;border-top:2px solid var(--hud-accent);border-left:2px solid var(--hud-accent);}
+        .tactical-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--hud-accent);border-right:2px solid var(--hud-accent);}
+        .tactical-card:active{transform:scale(.97) !important;}
+        .card-telemetry{font-family:'Courier New',monospace;font-size:10px;color:var(--hud-accent);letter-spacing:1px;}
+        .card-title{font-weight:800;font-size:18px;color:#E0E0E0;margin:8px 0;line-height:1.2;}
+        .card-body{font-size:12px;color:#666;line-height:1.5;flex:1;margin:4px 0;}
+        .card-url{font-size:10px;color:rgba(0,240,255,.5);font-family:'Courier New',monospace;letter-spacing:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+        .card-footer{font-size:10px;color:#444;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px;}
+        .hud-loading{margin:auto;font-family:'Courier New',monospace;font-size:13px;color:var(--hud-accent);letter-spacing:3px;animation:blink 1s step-end infinite;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-        /* Vertical Tabs Sidebar */
-        #vertical-tabs{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(5,5,7,.95);backdrop-filter:blur(20px);border-right:1px solid rgba(0,240,255,.15);transform:translateX(-100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:800;padding:20px;overflow-y:auto;}
-        #vertical-tabs.open{transform:translateX(0);}
-        .tab-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.05);cursor:pointer;}
-        .tab-item:hover{background:rgba(0,240,255,.1);}
-        .tab-item.active{background:rgba(0,240,255,.2);}
+        /* BOTTOM NAV */
+        #bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);border-radius:28px 28px 0 0;padding:16px 20px calc(16px + env(safe-area-inset-bottom));z-index:600;display:flex;flex-direction:column;gap:12px;overflow:hidden;background:rgba(8,8,14,.55);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 1px 0 0 rgba(0,240,255,.06),inset -1px 0 0 rgba(0,240,255,.06),0 -8px 40px rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.1);}
+        #bottom-nav::after{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);transform:skewX(-20deg);animation:nav-shimmer 6s ease-in-out infinite;pointer-events:none;z-index:0;}
+        @keyframes nav-shimmer{0%,100%{left:-60%}50%{left:120%}}
+        .tabs,.search-row{position:relative;z-index:1;}
+        .tabs{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;}
+        .tabs::-webkit-scrollbar{display:none;}
+        .tab{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;cursor:pointer;transition:color .2s;}
+        .tab.active{color:#FFF;text-shadow:0 0 12px rgba(255,255,255,.4);}
+        .tab[data-tab="beauty"]{color:var(--fashion);opacity:.7;}
+        .tab[data-tab="shopping"]{color:var(--gold);opacity:.7;}
+        .tab[data-tab="health"]{color:var(--health);opacity:.7;}
+        .search-row{display:flex;align-items:center;gap:12px;}
+        .search-bar{flex:1;background:rgba(13,17,23,.65);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px);border:1px solid rgba(0,240,255,.25);border-radius:18px;padding:0 14px;height:38px;display:flex;align-items:center;gap:8px;box-shadow:inset 0 0 12px rgba(0,240,255,.04),0 4px 20px rgba(0,0,0,.4);transition:border-color .3s,box-shadow .3s;overflow:hidden;position:relative;}
+        .search-bar::before{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,240,255,.06),transparent);animation:pill-shimmer 5s ease-in-out infinite;pointer-events:none;}
+        @keyframes pill-shimmer{0%,100%{left:-80%}60%{left:120%}}
+        .search-bar:focus-within{border-color:rgba(0,240,255,.55);box-shadow:inset 0 0 16px rgba(0,240,255,.07),0 0 20px rgba(0,240,255,.1);}
+        #search-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#DDD;position:relative;z-index:1;}
+        #search-input::placeholder{color:rgba(0,240,255,.35);font-family:'Courier New',monospace;letter-spacing:1px;font-size:11px;}
+        .ai-badge{font-size:9px;font-weight:800;color:var(--teal);letter-spacing:1px;white-space:nowrap;text-shadow:0 0 8px var(--teal);position:relative;z-index:1;cursor:pointer;}
+
+        /* DIAMOND BUTTON */
+        @keyframes diamond-pulse{0%,100%{filter:drop-shadow(0 0 5px rgba(160,210,255,.5)) drop-shadow(0 0 2px rgba(255,255,255,.3))}50%{filter:drop-shadow(0 0 9px rgba(160,210,255,.8)) drop-shadow(0 0 4px rgba(255,255,255,.5))}}
+        @keyframes diamond-light{0%{opacity:0;transform:translateX(-120%) skewX(-20deg)}40%{opacity:1}100%{opacity:0;transform:translateX(180%) skewX(-20deg)}}
+        .cut-diamond{animation:diamond-pulse 3s ease-in-out infinite;pointer-events:none;}
+        .diamond-sweep{animation:diamond-light 4s ease-in-out infinite;}
+        .diamond-btn{width:52px;height:52px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,box-shadow .3s;flex-shrink:0;position:relative;z-index:200;-webkit-user-select:none;user-select:none;box-shadow:inset 0 0 10px rgba(201,168,76,.05),0 4px 15px rgba(0,0,0,.3);}
+        .diamond-btn:active{transform:scale(.88);box-shadow:0 0 22px rgba(180,220,255,.3);}
+
+        /* LANDSCAPE ORB */
+        @media(orientation:landscape){#search-view{bottom:0;}#home-view{height:calc(100vh - var(--nav-h));}#search-orb{display:flex;}}
+        @media(orientation:portrait){#search-orb{display:none !important;}}
+        #search-orb{display:none;position:fixed;bottom:24px;right:20px;z-index:700;flex-direction:column;align-items:flex-end;gap:10px;}
+        .orb-btn{width:44px;height:44px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:background .2s,transform .15s;-webkit-user-select:none;user-select:none;}
+        .orb-btn:active{transform:scale(.88);background:rgba(0,240,255,.15);}
+        #orb-search-wrap{display:none;background:rgba(5,5,7,.85);border:1px solid rgba(0,240,255,.2);border-radius:22px;padding:0 14px;height:40px;align-items:center;gap:8px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+        #orb-search-wrap.open{display:flex;}
+        #orb-input{background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;color:#DDD;width:140px;}
+        #orb-input::placeholder{color:rgba(0,240,255,.4);font-family:'Courier New',monospace;letter-spacing:1px;}
+        .orb-ai{font-size:9px;font-weight:800;color:var(--teal);letter-spacing:1px;}
+
+        /* SANCTUARY */
+        #sanctuary{position:fixed;bottom:-100%;left:0;right:0;height:93%;background:var(--surface);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-radius:36px 36px 0 0;z-index:1000;overflow-y:auto;overflow-x:hidden;padding:20px 22px calc(40px + env(safe-area-inset-bottom));transition:bottom .45s cubic-bezier(.16,1,.3,1);-webkit-overflow-scrolling:touch;}
+        #sanctuary.open{bottom:0;}
+        .handle{width:40px;height:4px;background:rgba(255,255,255,.12);border-radius:10px;margin:0 auto 28px;}
+        .sanctuary-title{font-family:'Playfair Display',serif;font-size:32px;font-weight:900;color:var(--white);margin-bottom:6px;}
+        .sanctuary-sub{font-size:13px;color:var(--gold);font-weight:500;margin-bottom:32px;line-height:1.4;}
+        .section-label{font-size:10px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;margin-top:28px;}
+        .tile{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:20px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+        .tile-left{flex:1;min-width:0;}
+        .tile-tag{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+        .tile-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+        .tile-name{font-size:15px;font-weight:700;color:var(--white);margin-bottom:3px;}
+        .tile-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+        .toggle{width:44px;height:25px;border-radius:13px;background:rgba(255,255,255,.1);position:relative;cursor:pointer;transition:background .35s;flex-shrink:0;}
+        .knob{width:19px;height:19px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .35s cubic-bezier(.16,1,.3,1);pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+        .toggle.on{background:var(--teal);}.toggle.on .knob{left:22px;}
+        .toggle.on.fashion{background:var(--fashion);}.toggle.on.health{background:var(--health);}.toggle.on.berry{background:var(--berry);}
+        .accent-red{border-left:3px solid var(--berry);}.accent-purple{border-left:3px solid var(--fashion);}.accent-pink{border-left:3px solid var(--health);}.accent-berry{border-left:3px solid var(--berry);}
+        .btn-return{width:100%;padding:18px;background:var(--gold);color:#000;border:none;border-radius:18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;cursor:pointer;margin-top:28px;transition:opacity .2s;}
+        .btn-return:active{opacity:.8;}
+
+        /* SIDEBAR ARCHITECTURE */
+        #aura-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: var(--nav-h);
+            width: 280px;
+            background: rgba(4, 4, 7, 0.65);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border-right: 1px solid rgba(201, 168, 76, 0.15);
+            box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.03), 15px 0 40px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(-100%);
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 550;
+            overflow: hidden;
+        }
+        #aura-sidebar.open { transform: translateX(0); }
+        .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 24px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--white); letter-spacing: 0.5px; }
+        .btn-close-sidebar { background: none; border: none; color: var(--muted); font-size: 14px; cursor: pointer; transition: color 0.2s; }
+        .btn-close-sidebar:hover { color: var(--white); }
+
+        /* BIO-INTERFACE TAB LOGIC */
+        .vertical-tabs { list-style: none; padding: 10px 0; flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .vertical-tabs::-webkit-scrollbar { display: none; }
+        .v-tab { display: flex; align-items: center; gap: 14px; padding: 16px 20px; color: var(--muted); font-size: 13px; cursor: pointer; border-bottom: 1px solid rgba(255, 255, 255, 0.02); transition: all 0.3s ease; position: relative; }
+        .tab-node { width: 6px; height: 6px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.2); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.5); }
+        .v-tab:hover { background: rgba(255, 255, 255, 0.02); color: rgba(255, 255, 255, 0.85); }
+        .v-tab.active { color: var(--gold); background: linear-gradient(90deg, rgba(201, 168, 76, 0.08), transparent); border-left: 2px solid var(--gold); }
+        .v-tab.active .tab-node { background: var(--gold); border-color: var(--gold); box-shadow: 0 0 12px rgba(201, 168, 76, 0.6); }
+        .tab-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+
+        /* HIGH-END JEWELRY PAYWALL */
+        .diamond-paywall { position: absolute; top: 70px; left: 0; right: 0; bottom: 0; background: rgba(5, 5, 8, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 10; opacity: 1; transition: opacity 0.4s ease, pointer-events 0s; }
+        .diamond-paywall.hidden { opacity: 0; pointer-events: none; }
+        .paywall-glass-card { background: rgba(20, 20, 25, 0.6); border: 1px solid rgba(201, 168, 76, 0.25); border-radius: 16px; padding: 32px 24px; text-align: center; box-shadow: inset 0 0 30px rgba(201, 168, 76, 0.05), 0 20px 40px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; align-items: center; }
+        .paywall-icon { width: 44px; height: 44px; border-radius: 12px; background: rgba(201, 168, 76, 0.05); border: 1px solid rgba(201, 168, 76, 0.3); color: var(--gold); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(201, 168, 76, 0.1), 0 0 20px rgba(201, 168, 76, 0.15); }
+        .paywall-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 900; color: var(--white); margin-bottom: 12px; }
+        .paywall-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+        .btn-upgrade { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 14px 28px; border-radius: 30px; font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; transition: all 0.3s ease; box-shadow: inset 0 0 0 rgba(201, 168, 76, 0); }
+        .btn-upgrade:hover { background: var(--gold); color: var(--black); box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.4), 0 5px 20px rgba(201, 168, 76, 0.3); }
     </style>
 </head>
 <body>
 
-<!-- YOUR ORIGINAL HTML (home, search, reader, sanctuary, nav, orb) -->
-<!-- (The only change is inside #sanctuary and the new vertical tabs div) -->
+<aside id="aura-sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-title">Sanctuary Vault</div>
+        <button class="btn-close-sidebar" id="close-sidebar">✕</button>
+    </div>
+    <ul class="vertical-tabs" id="v-tabs-list">
+        <li class="v-tab active" data-id="tab-1">
+            <span class="tab-node"></span>
+            <span class="tab-label">Neural Architecture Search</span>
+        </li>
+        <li class="v-tab" data-id="tab-2">
+            <span class="tab-node"></span>
+            <span class="tab-label">Market Alpha Diagnostics</span>
+        </li>
+        <li class="v-tab" data-id="tab-3">
+            <span class="tab-node"></span>
+            <span class="tab-label">Aura Development Logs</span>
+        </li>
+    </ul>
+    <div class="diamond-paywall" id="diamond-paywall">
+        <div class="paywall-glass-card">
+            <div class="paywall-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 3h12l4 6-10 12L2 9l4-6z"></path>
+                </svg>
+            </div>
+            <div class="paywall-title">Diamond Tier</div>
+            <div class="paywall-desc">Unlock infinite vertical workspaces, secure tab groups, and persistent offline vaults.</div>
+            <button class="btn-upgrade" id="btn-upgrade-diamond">Ascend to Diamond</button>
+        </div>
+    </div>
+</aside>
 
-<div id="home-view"> <!-- your original home content --> </div>
-<div id="search-view"> <!-- your original search view --> </div>
-<div id="reader-view"> <!-- your original reader --> </div>
-<div id="search-orb"> <!-- orb --> </div>
-
-<!-- VERTICAL TABS (new) -->
-<div id="vertical-tabs">
-    <div style="margin-bottom:16px;font-size:13px;color:var(--gold);font-weight:700;">OPEN TABS</div>
-    <div id="tabs-list"></div>
-    <div onclick="upgradeToDiamond()" id="tabs-paywall" style="display:none;margin-top:20px;padding:16px;background:rgba(255,255,255,.05);border-radius:12px;text-align:center;color:#888;">
-        💎 Diamond Tier unlocks vertical tabs and tab groups
+<div id="home-view">
+    <div class="brand-row">
+        <svg class="cut-diamond brand-diamond" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="38" height="42" stroke="currentColor" stroke-width="1" fill="none">
+            <path d="M6 3h12l4 6-10 12L2 9l4-6z"></path>
+        </svg>
+    </div>
+    <div class="brand">AURA</div>
+    <div class="tagline">The Sanctuary</div>
+    <div class="waitlist">
+        <div class="waitlist-label">Join The Movement</div>
+        <div class="waitlist-desc">Reserve your access to the world's first AI-powered browser built for women.</div>
+        <div class="input-row">
+            <input type="email" class="email-input" placeholder="Your email address">
+            <button class="btn-submit">Request Access</button>
+        </div>
+        <div class="live-count">
+            <div class="count-dot"></div>
+            <div class="count-num">14,208</div>
+            <div class="count-label">Women waiting</div>
+        </div>
     </div>
 </div>
 
-<!-- REDESIGNED SANCTUARY (with paid community + diamond tier) -->
+<div id="reader-view">
+    <div class="reader-bar">
+        <div class="reader-back">←</div>
+        <div class="reader-title-bar">Initializing neural parse...</div>
+    </div>
+    <div class="reader-content">
+        <div class="reader-aura-tag">Aura Analysis</div>
+        <div class="reader-heading">System Standby</div>
+        <div class="reader-body">
+            <p>Awaiting query parameters. The sanctuary environment is fully active and protected.</p>
+        </div>
+    </div>
+</div>
+
+<div id="search-view">
+    <div class="hud-bar">
+        <div class="hud-back">←</div>
+        <div class="hud-query-display">Standby...</div>
+    </div>
+    <div class="cards-viewport">
+        </div>
+</div>
+
+<div id="bottom-nav">
+    <div class="tabs">
+        <div class="tab active" data-tab="home">Home</div>
+        <div class="tab" data-tab="beauty">Beauty</div>
+        <div class="tab" data-tab="shopping">Shopping</div>
+        <div class="tab" data-tab="health">Health</div>
+    </div>
+    <div class="search-row">
+        <button id="toggle-sidebar" class="hud-back" style="background:transparent; border:none; color:var(--muted); box-shadow:none;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 12h18M3 6h18M3 18h18"></path></svg>
+        </button>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Ask the sanctuary...">
+            <span class="ai-badge">AI</span>
+        </div>
+        <div class="diamond-btn" id="open-sanctuary">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--gold)" stroke-width="1.5" fill="none"><path d="M6 3h12l4 6-10 12L2 9l4-6z"></path></svg>
+        </div>
+    </div>
+</div>
+
+<div id="search-orb">
+    <div id="orb-search-wrap">
+        <input type="text" id="orb-input" placeholder="Query Aura...">
+        <span class="orb-ai">AI</span>
+    </div>
+    <div class="orb-btn">✧</div>
+</div>
+
 <div id="sanctuary">
     <div class="handle"></div>
-    <h2 class="sanctuary-title">Diamond Sanctuary</h2>
-    <p class="sanctuary-sub">Your private lifestyle fortress.</p>
-
-    <!-- Existing guardian tiles (keep yours) -->
-
-    <!-- Paid Community -->
-    <p class="section-label" style="color:var(--fashion)">SANCTUARY CIRCLE • COMMUNITY</p>
-    <div id="community-module">
-        <div id="community-paywall" class="paywall-teaser">
-            <div style="font-size:18px;margin-bottom:12px;">💎 Diamond Tier Required</div>
-            <p>Join the private sisterhood. Post and connect safely.</p>
-            <button onclick="upgradeToDiamond()" class="guardian-btn" style="background:var(--gold);color:#000;width:100%;padding:16px;margin-top:12px;">UNLOCK COMMUNITY — $4.99/mo</button>
-        </div>
-        <div id="community-content" style="display:none;">
-            <div id="community-feed" style="max-height:300px;overflow-y:auto;margin-bottom:16px;"></div>
-            <textarea id="community-post-input" placeholder="Share with the Circle (anonymous)..." style="width:100%;background:transparent;border:1px solid var(--border);border-radius:12px;padding:12px;color:#DDD;"></textarea>
-            <button onclick="postToCommunity()" style="margin-top:8px;width:100%;background:var(--fashion);color:white;padding:12px;border-radius:12px;">POST TO THE CIRCLE</button>
-        </div>
-    </div>
-
-    <!-- Diamond Tier Upsell -->
-    <p class="section-label" style="color:var(--gold)">DIAMOND TIER • MAXIMUM SANCTUARY</p>
-    <div class="tile accent-gold">
+    <div class="sanctuary-title">Sanctuary</div>
+    <div class="sanctuary-sub">Configure your environment parameters.</div>
+    
+    <div class="section-label">Privacy Shield</div>
+    <div class="tile accent-purple">
         <div class="tile-left">
-            <div class="tile-tag" style="color:var(--gold)">PREMIUM</div>
-            <div class="tile-name">Unlock Everything</div>
-            <div class="tile-desc">Vertical tabs • Voice Guardian • Vault sync • Ad-free • Exclusive themes</div>
+            <div class="tile-tag" style="color:var(--fashion);">Active</div>
+            <div class="tile-name">Tracker Eradication</div>
+            <div class="tile-desc">Blocks telemetry, fingerprinting, and behavioral mapping.</div>
         </div>
-        <button onclick="upgradeToDiamond()" class="guardian-btn" style="background:var(--gold);color:#000;padding:14px 24px;">BECOME A DIAMOND SISTER</button>
+        <div class="toggle on fashion"><div class="knob"></div></div>
     </div>
-
-    <button class="btn-return" onclick="closePanel()">Return to Aura</button>
+    
+    <button class="btn-return" id="close-sanctuary">Confirm & Return</button>
 </div>
 
-<nav id="bottom-nav"> <!-- your original nav --> </nav>
-
 <script>
-// ── SECURE DUCKDUCKGO SEARCH + VERTICAL TABS + PAID FEATURES ──
-let currentTab = 'web';
-let currentQuery = '';
-let openTabs = []; // for vertical tabs demo
+document.addEventListener('DOMContentLoaded', () => {
+    // Core State
+    let userTier = 'standard'; 
 
-async function getSearchResults(query) {
-    await new Promise(r => setTimeout(r, 550));
-    try {
-        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
-        const data = await res.json();
-        const results = [];
-        if (data.RelatedTopics) {
-            data.RelatedTopics.slice(0, 5).forEach((t, i) => {
-                if (t.Text) results.push({
-                    id: String(i+1).padStart(2, '0'),
-                    title: t.Text.split(' - ')[0],
-                    desc: t.Text,
-                    domain: "duckduckgo.com",
-                    category: currentTab,
-                    insight: "Privacy-first • No tracking"
-                });
-            });
+    // DOM Elements
+    const sidebar = document.getElementById('aura-sidebar');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+    const closeBtn = document.getElementById('close-sidebar');
+    const paywall = document.getElementById('diamond-paywall');
+    const upgradeBtn = document.getElementById('btn-upgrade-diamond');
+    const vTabs = document.querySelectorAll('.v-tab');
+    const sanctuary = document.getElementById('sanctuary');
+    const openSanctuary = document.getElementById('open-sanctuary');
+    const closeSanctuary = document.getElementById('close-sanctuary');
+
+    // Access Control Logic
+    const enforceTierAccess = () => {
+        if (userTier === 'diamond') {
+            paywall.classList.add('hidden');
+        } else {
+            paywall.classList.remove('hidden');
         }
-        return results.length ? results : [{id:"00", title: query, desc: "Private search complete.", domain: "duckduckgo.com", insight: "Shielded by Aura"}];
-    } catch(e) {
-        return [{id:"00", title: query, desc: "DuckDuckGo shielded your search.", domain: "duckduckgo.com", insight: "Private & secure"}];
-    }
-}
+    };
 
-async function runSearch(query) {
-    if (!query?.trim()) return;
-    currentQuery = query.trim();
-
-    const home = document.getElementById('home-view');
-    const searchView = document.getElementById('search-view');
-    const cards = document.getElementById('cards-viewport');
-    const hud = document.getElementById('hud-query-text');
-
-    home.classList.add('hidden');
-    searchView.classList.add('visible');
-    hud.textContent = `QUERY: "${currentQuery.toUpperCase()}"`;
-
-    cards.innerHTML = `<div class="hud-loading">AURA CORE • SCANNING YOUR SANCTUARY...</div>`;
-
-    const results = await getSearchResults(currentQuery);
-    cards.innerHTML = '';
-
-    results.forEach(r => {
-        const card = document.createElement('div');
-        card.className = `tactical-card ${r.category}`;
-        card.innerHTML = `
-            <div class="card-telemetry">OBJ_${r.id} // SECURE</div>
-            <div class="card-title">${r.title}</div>
-            <div class="card-body">${r.desc}</div>
-            <div class="card-insight">✺ ${r.insight}</div>
-            <div class="card-url">${r.domain}</div>
-            <div class="card-footer">TAP TO ENTER SANCTUARY →</div>
-        `;
-        card.onclick = () => openReader(r);
-        cards.appendChild(card);
-    });
-
-    addAffiliateCards(cards);
-    applyParallax();
-}
-
-// Vertical Tabs Management
-function renderVerticalTabs() {
-    const isDiamond = localStorage.getItem('aura_diamond_tier') === 'true';
-    const tabsList = document.getElementById('tabs-list');
-    const paywall = document.getElementById('tabs-paywall');
-    tabsList.innerHTML = '';
-
-    if (!isDiamond) {
-        paywall.style.display = 'block';
-        return;
-    }
-    paywall.style.display = 'none';
-
-    openTabs.forEach((tab, i) => {
-        const el = document.createElement('div');
-        el.className = 'tab-item';
-        el.innerHTML = `
-            <span>${tab.title}</span>
-            <span onclick="event.stopImmediatePropagation();closeTab(${i});" style="color:#E8917A;font-size:18px;">×</span>
-        `;
-        el.onclick = () => console.log('Switched to tab:', tab.title);
-        tabsList.appendChild(el);
-    });
-}
-
-function closeTab(index) {
-    openTabs.splice(index, 1);
-    renderVerticalTabs();
-}
-
-function addNewTab(title) {
-    openTabs.push({title: title.substring(0, 25) + (title.length > 25 ? '...' : '')});
-    renderVerticalTabs();
-}
-
-// Affiliate cards
-function addAffiliateCards(viewport) {
-    const html = `<div class="affiliate-card"><div style="flex:1"><div style="font-size:10px;color:var(--gold);">CURATED FOR YOU • WOMEN-OWNED</div><div style="font-size:13px;">Safe brands matching your search</div></div><button onclick="fakeCheckout()" class="shop-btn">SHOP SAFELY →</button></div>`;
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    viewport.appendChild(div.firstElementChild);
-}
-
-function fakeCheckout() {
-    alert("🛍️ Affiliate checkout simulated — revenue earned for Aura.");
-}
-
-// Diamond Tier
-function upgradeToDiamond() {
-    localStorage.setItem('aura_diamond_tier', 'true');
-    alert("🎟️ Welcome, Diamond Sister! Vertical tabs, community, and all premium features unlocked.");
-    renderVerticalTabs();
-    checkCommunityAccess();
-}
-
-// Community paywall (same as before)
-function checkCommunityAccess() {
-    const isDiamond = localStorage.getItem('aura_diamond_tier') === 'true';
-    const paywall = document.getElementById('community-paywall');
-    const content = document.getElementById('community-content');
-    if (isDiamond) {
-        paywall.style.display = 'none';
-        content.style.display = 'block';
-    }
-}
-
-// Parallax (original gravity + angle restored)
-function applyParallax() {
-    const cards = document.querySelectorAll('.tactical-card');
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const center = isPortrait ? window.innerHeight / 2 : window.innerWidth / 2;
-    cards.forEach(card => {
-        const rect = card.getBoundingClientRect();
-        const cardCenter = isPortrait ? rect.top + rect.height/2 : rect.left + rect.width/2;
-        let rot = Math.max(-40, Math.min(40, ((cardCenter - center) / center) * 40));
-        card.style.transform = isPortrait ? `rotateX(\( {-rot}deg)` : `rotateY( \){rot}deg)`;
-    });
-}
-
-function initParallax() {
-    const viewport = document.getElementById('cards-viewport');
-    if (viewport) {
-        viewport.addEventListener('scroll', applyParallax);
-        window.addEventListener('resize', () => {
-            if (document.getElementById('search-view').classList.contains('visible')) applyParallax();
+    // Sidebar Interactions
+    if(toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            enforceTierAccess();
         });
     }
-}
 
-function setupSearch() {
-    const input = document.getElementById('search-input');
-    const badge = document.getElementById('ai-badge');
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runSearch(input.value); }});
-    badge.addEventListener('click', () => runSearch(input.value));
-    badge.addEventListener('touchend', e => { e.preventDefault(); runSearch(input.value); });
-}
+    if(closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+        });
+    }
 
-// Open panel hook
-function openPanel() {
-    // your original code
-    checkCommunityAccess();
-    renderVerticalTabs();
-}
+    // Mock Upgrade Transaction
+    if(upgradeBtn) {
+        upgradeBtn.addEventListener('click', () => {
+            const originalText = upgradeBtn.innerText;
+            upgradeBtn.innerText = 'AUTHENTICATING...';
+            
+            setTimeout(() => {
+                userTier = 'diamond';
+                enforceTierAccess();
+                upgradeBtn.innerText = originalText;
+            }, 1200);
+        });
+    }
 
-// Load
-window.addEventListener('load', () => {
-    setupSearch();
-    initParallax();
-    console.log('%c✅ Aura — Vertical tabs + paid community + DuckDuckGo search + revenue features live', 'color:#C9A84C;font-weight:700');
+    // Tab Interface Logic
+    vTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            if (userTier !== 'diamond') return;
+            vTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const targetId = tab.getAttribute('data-id');
+            console.log(`Routing to interface node: ${targetId}`);
+        });
+    });
+
+    // Sanctuary Interaction
+    if(openSanctuary) {
+        openSanctuary.addEventListener('click', () => {
+            sanctuary.classList.add('open');
+        });
+    }
+    
+    if(closeSanctuary) {
+        closeSanctuary.addEventListener('click', () => {
+            sanctuary.classList.remove('open');
+        });
+    }
 });
 </script>
 </body>
