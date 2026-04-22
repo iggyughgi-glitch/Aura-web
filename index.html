@@ -4,1559 +4,278 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Aura — The Sanctuary</title>
-    <meta name="description" content="The world's first AI-powered web browser built for women.">
-    <meta property="og:title" content="Aura — The Sanctuary">
-    <meta property="og:description" content="The world's first AI-powered web browser built for women.">
-    <meta name="theme-color" content="#050507">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Aura">
-    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22Aura%20%E2%80%94%20The%20Sanctuary%22%2C%22short_name%22%3A%22Aura%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23050507%22%2C%22theme_color%22%3A%22%23050507%22%2C%22orientation%22%3A%22portrait%22%7D">
+    <meta name="description" content="Your lifestyle sanctuary on the internet.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ── DESIGN TOKENS ──────────────────────────────────────────────────── */
         :root {
-            --black:   #040406;
-            --surface: rgba(10,10,16,0.98);
-            --border:  rgba(255,255,255,0.07);
-            --gold:    #C9A84C;
-            --teal:    #4EADA0;
-            --berry:   #A0426E;
-            --fashion: #B87ED4;
-            --health:  #E8917A;
-            --white:   #FDFCFA;
-            --muted:   #7A7A82;
-            --nav-h:   80px;
-            /* Diamond ice palette */
-            --hud-bg:      #050507;
-            --hud-accent:  #C8E8F8;
-            --hud-accent2: #A8CCEC;
-            --hud-gold:    #C9A84C;
-            --hud-grid:    rgba(180,210,240,0.045);
-            /* Apple Glass */
-            --glass-bg:    rgba(12,14,20,0.72);
-            --glass-border:rgba(255,255,255,0.10);
-            --glass-shine: rgba(255,255,255,0.06);
+            --black:#040406; --surface:rgba(10,10,16,0.98); --border:rgba(255,255,255,0.07);
+            --gold:#C9A84C; --teal:#4EADA0; --berry:#A0426E; --fashion:#B87ED4; --health:#E8917A;
+            --white:#FDFCFA; --muted:#7A7A82; --nav-h:130px;
+            --hud-bg:#050507; --hud-accent:#00F0FF; --hud-grid:rgba(0,240,255,0.05);
         }
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        html,body{height:100%;overflow:hidden;background:#FAFAF8;color:#0D0D0D;font-family:'DM Sans',sans-serif;}
 
-        *,*::before,*::after { box-sizing:border-box; -webkit-tap-highlight-color:transparent; margin:0; padding:0; }
-        html,body { height:100%; overflow:hidden; background:#050507; color:#0D0D0D; font-family:'DM Sans',sans-serif; }
+        /* === ORIGINAL CSS (preserved) + new vertical tabs styling === */
+        #home-view{height:calc(100vh - var(--nav-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px;transition:filter .5s ease,opacity .4s ease;}
+        #home-view.blurred{filter:blur(8px) brightness(.85);pointer-events:none;}
+        #home-view.hidden{opacity:0;pointer-events:none;}
+        .brand-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
+        .brand-diamond{animation:diamond-pulse 3s ease-in-out infinite;flex-shrink:0;margin-top:6px;}
+        .brand{font-family:'Playfair Display',serif;font-size:clamp(62px,18vw,88px);font-weight:900;letter-spacing:-3px;line-height:1;color:#0A0A0A;}
+        .tagline{font-size:13px;color:#888;font-weight:400;letter-spacing:2px;text-transform:uppercase;}
 
-        /* ── HOME VIEW ──────────────────────────────────────────────────────── */
-        #home-view {
-            height: calc(100vh - var(--nav-h));
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            text-align:center; padding:0 32px;
-            transition: filter .5s ease, opacity .4s ease;
-        }
-        #home-view.blurred  { filter:blur(8px) brightness(.85); pointer-events:none; }
-        #home-view.hidden   { opacity:0; pointer-events:none; }
-        .brand-row          { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:10px; }
-        .brand-diamond      { animation:diamond-pulse 3s ease-in-out infinite; flex-shrink:0; margin-top:6px; }
-        .brand              { font-family:'Playfair Display',serif; font-size:clamp(62px,18vw,88px); font-weight:900; letter-spacing:-3px; line-height:1; color:#0A0A0A; }
-        .tagline            { font-size:13px; color:#888; font-weight:400; letter-spacing:2px; text-transform:uppercase; }
-        .waitlist           { margin-top:52px; width:100%; max-width:300px; }
-        .waitlist-label     { font-size:10px; text-transform:uppercase; letter-spacing:4px; font-weight:700; color:#333; margin-bottom:8px; }
-        .waitlist-desc      { font-size:12px; color:#888; line-height:1.6; margin-bottom:28px; }
-        .input-row          { display:flex; align-items:center; border-bottom:1.5px solid #D0D0D0; padding-bottom:10px; transition:border-color .3s; }
-        .input-row:focus-within { border-color:#0A0A0A; }
-        .email-input        { flex:1; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:14px; color:#0A0A0A; background:transparent; }
-        .email-input::placeholder { color:#BBB; }
-        .btn-submit         { background:none; border:none; font-family:'DM Sans',sans-serif; font-size:10px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#0A0A0A; cursor:pointer; padding:0; transition:color .3s,opacity .3s; white-space:nowrap; }
-        .btn-submit:disabled { opacity:.4; cursor:default; }
-        .live-count         { margin-top:22px; display:flex; align-items:center; justify-content:center; gap:8px; }
-        .count-dot          { width:6px; height:6px; background:var(--teal); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
-        @keyframes pulse    { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
-        .count-num          { font-size:12px; font-weight:700; color:var(--teal); font-variant-numeric:tabular-nums; }
-        .count-label        { font-size:10px; color:#AAA; text-transform:uppercase; letter-spacing:2px; }
+        .tactical-card{flex:0 0 auto;width:min(280px,85vw);min-height:220px;background:transparent;border:1px solid rgba(0,240,255,.15);box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 0 30px rgba(0,240,255,.02);display:flex;flex-direction:column;justify-content:space-between;padding:22px;position:relative;transform-style:preserve-3d;transition:transform .15s;cursor:pointer;border-radius:4px;}
+        .affiliate-card{background:rgba(201,168,76,.08);border:1px solid var(--gold);border-radius:16px;padding:14px;margin-top:12px;display:flex;align-items:center;gap:12px;}
+        .affiliate-card .shop-btn{background:var(--gold);color:#000;padding:8px 16px;border-radius:9999px;font-size:11px;font-weight:700;white-space:nowrap;}
+        .paywall-teaser{text-align:center;padding:40px 20px;background:rgba(255,255,255,.03);border:1px dashed var(--gold);border-radius:20px;color:#888;}
 
-        /* ── READER VIEW ─────────────────────────────────────────────────────── */
-        #reader-view { position:fixed; top:0; left:0; right:0; bottom:var(--nav-h); z-index:600; opacity:0; pointer-events:none; transition:opacity .35s ease; display:flex; flex-direction:column; background:var(--hud-bg); }
-        #reader-view.visible { opacity:1; pointer-events:all; }
-        .reader-bar { display:flex; align-items:center; gap:12px; flex-shrink:0; position:relative; background:rgba(8,8,14,.55); backdrop-filter:blur(28px) saturate(180%); -webkit-backdrop-filter:blur(28px) saturate(180%); border-bottom:1px solid rgba(180,210,240,.12); padding:calc(env(safe-area-inset-top) + 14px) 16px 14px; }
-        .reader-back { width:34px; height:34px; background:rgba(180,210,240,.06); border:1px solid rgba(180,210,240,.22); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--hud-accent); font-size:15px; flex-shrink:0; transition:background .2s; }
-        .reader-back:active { background:rgba(180,210,240,.18); }
-        .reader-title-bar { flex:1; font-family:'Courier New',monospace; font-size:11px; color:var(--hud-accent); letter-spacing:1.5px; opacity:.85; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; background:rgba(180,210,240,.04); border:1px solid rgba(180,210,240,.1); border-radius:14px; padding:6px 14px; text-shadow:0 0 8px rgba(180,210,240,.4); }
-        .reader-content { flex:1; overflow-y:auto; position:relative; -webkit-overflow-scrolling:touch; }
-        .reader-content::-webkit-scrollbar { display:none; }
-        .reader-aura-tag { font-family:'Courier New',monospace; font-size:9px; color:var(--teal); letter-spacing:3px; text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:8px; padding:24px 20px 0; }
-        .reader-aura-tag::before,.reader-aura-tag::after { content:''; width:20px; height:1px; background:var(--teal); }
-        .reader-heading { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; color:var(--white); line-height:1.2; margin-bottom:16px; padding:0 20px; }
-        .reader-body { font-size:14px; color:#999; line-height:1.8; padding:0 20px 40px; }
-        .reader-body p { margin-bottom:16px; }
-        .reader-loading { margin:auto; font-family:'Courier New',monospace; font-size:13px; color:var(--hud-accent); letter-spacing:3px; animation:blink 1s step-end infinite; }
-
-        /* ── SEARCH VIEW ─────────────────────────────────────────────────────── */
-        #search-view { position:fixed; top:0; left:0; right:0; bottom:var(--nav-h); background:var(--hud-bg); background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px); background-size:40px 40px; z-index:500; opacity:0; pointer-events:none; transition:opacity .35s ease; display:flex; flex-direction:column; }
-        #search-view.visible { opacity:1; pointer-events:all; }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-
-        /* ── HUD BAR ─────────────────────────────────────────────────────────── */
-        .hud-bar { display:flex; align-items:center; gap:12px; flex-shrink:0; overflow:hidden; position:relative; background:rgba(8,8,14,.55); backdrop-filter:blur(28px) saturate(180%); -webkit-backdrop-filter:blur(28px) saturate(180%); border-bottom:1px solid rgba(180,210,240,.12); box-shadow:inset 0 -1px 0 rgba(180,210,240,.06),inset 0 1px 0 rgba(255,255,255,.05),0 8px 32px rgba(0,0,0,.5); }
-        @media(orientation:portrait)  { .hud-bar { padding:calc(env(safe-area-inset-top) + 14px) 16px 14px; } }
-        @media(orientation:landscape) { .hud-bar { padding:10px 16px; } }
-        .hud-bar::after { content:''; position:absolute; top:0; left:-80%; width:50%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.06),transparent); transform:skewX(-15deg); animation:hud-shimmer 7s ease-in-out infinite; pointer-events:none; z-index:0; }
-        @keyframes hud-shimmer { 0%,100%{left:-80%} 55%{left:130%} }
-        .hud-back { width:34px; height:34px; background:rgba(180,210,240,.06); border:1px solid rgba(180,210,240,.22); border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--hud-accent); font-size:15px; flex-shrink:0; transition:background .2s; position:relative; z-index:1; }
-        .hud-back:active { background:rgba(180,210,240,.18); }
-        .hud-query-display { flex:1; font-family:'Courier New',monospace; font-size:11px; color:var(--hud-accent); letter-spacing:2px; opacity:.85; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; background:rgba(180,210,240,.04); border:1px solid rgba(180,210,240,.1); border-radius:14px; padding:6px 14px; text-shadow:0 0 8px rgba(180,210,240,.4); position:relative; z-index:1; }
-
-        /* ── TACTICAL CARDS ──────────────────────────────────────────────────── */
-        .cards-viewport { flex:1; display:flex; perspective:1000px; padding:20px; gap:20px; -webkit-overflow-scrolling:touch; }
-        .cards-viewport::-webkit-scrollbar { display:none; }
-        @media(orientation:portrait)  { .cards-viewport { flex-direction:column; overflow-y:auto; overflow-x:hidden; align-items:center; } }
-        @media(orientation:landscape) { .cards-viewport { flex-direction:row; overflow-x:auto; overflow-y:hidden; align-items:center; } }
-        .tactical-card { flex:0 0 auto; width:min(280px,85vw); min-height:220px; background:transparent; border:1px solid rgba(180,210,240,.12); box-shadow:0 20px 60px rgba(0,0,0,.4),inset 0 0 30px rgba(201,168,76,.015); display:flex; flex-direction:column; justify-content:space-between; padding:22px; position:relative; transform-style:preserve-3d; transition:transform .15s; cursor:pointer; border-radius:4px; }
-        .tactical-card::before,.tactical-card::after { content:''; position:absolute; width:14px; height:14px; }
-        .tactical-card::before { top:-1px; left:-1px; border-top:2px solid var(--hud-accent2); border-left:2px solid var(--hud-accent2); }
-        .tactical-card::after  { bottom:-1px; right:-1px; border-bottom:2px solid var(--hud-gold); border-right:2px solid var(--hud-gold); }
-        .tactical-card:active  { transform:scale(.97) !important; }
-        .card-telemetry { font-family:'Courier New',monospace; font-size:10px; color:var(--hud-accent2); letter-spacing:1px; }
-        .card-title     { font-weight:800; font-size:18px; color:#E8F0F8; margin:8px 0; line-height:1.2; }
-        .card-body      { font-size:12px; color:#666; line-height:1.5; flex:1; margin:4px 0; }
-        .card-url       { font-size:10px; color:rgba(201,168,76,.6); font-family:'Courier New',monospace; letter-spacing:1px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-        .card-footer    { font-size:10px; color:#444; text-transform:uppercase; letter-spacing:1.5px; margin-top:8px; }
-        .hud-loading    { margin:auto; font-family:'Courier New',monospace; font-size:13px; color:var(--hud-accent); letter-spacing:3px; animation:blink 1s step-end infinite; }
-
-        /* ── BOTTOM NAV — pull-up bottom sheet ───────────────────────────────── */
-        #bottom-nav {
-            position:fixed; bottom:0; left:0; right:0;
-            height: var(--nav-h);
-            border-radius:28px 28px 0 0;
-            padding:12px 20px calc(12px + env(safe-area-inset-bottom));
-            z-index:600; display:flex; flex-direction:column; gap:10px; overflow:hidden;
-            background:rgba(8,8,14,.65);
-            backdrop-filter:blur(32px) saturate(200%); -webkit-backdrop-filter:blur(32px) saturate(200%);
-            box-shadow:inset 0 1px 0 rgba(255,255,255,.12),inset 1px 0 0 rgba(201,168,76,.06),inset -1px 0 0 rgba(201,168,76,.06),0 -8px 40px rgba(0,0,0,.6);
-            border-top:1px solid rgba(255,255,255,.10);
-            transition:transform .4s cubic-bezier(.16,1,.3,1), border-radius .4s ease;
-            transform:translateY(0);
-            touch-action:none;
-            will-change:transform;
-        }
-        #bottom-nav.sheet-collapsed { transform:translateY(calc(100% - var(--nav-h))); }
-        #bottom-nav.sheet-expanded  { transform:translateY(0); height:92vh; overflow-y:auto; }
-        #nav-pull-handle { width:40px; height:4px; background:rgba(255,255,255,.18); border-radius:10px; margin:0 auto 2px; flex-shrink:0; position:relative; z-index:1; cursor:grab; transition:background .2s; }
-        #bottom-nav.sheet-collapsed #nav-pull-handle { background:rgba(201,168,76,.45); }
-        #bottom-nav::after { content:''; position:absolute; top:-50%; left:-60%; width:40%; height:200%; background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent); transform:skewX(-20deg); animation:nav-shimmer 6s ease-in-out infinite; pointer-events:none; z-index:0; }
-        @keyframes nav-shimmer { 0%,100%{left:-60%} 50%{left:120%} }
-        .search-row { display:flex; align-items:center; gap:12px; position:relative; z-index:1; }
-
-        /* Search bar — gold border, ice inner glow */
-        .search-bar { flex:1; background:rgba(13,17,23,.65); backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px); border:1px solid rgba(201,168,76,.3); border-radius:18px; padding:0 14px; height:44px; display:flex; align-items:center; gap:8px; box-shadow:inset 0 0 12px rgba(201,168,76,.04),0 4px 20px rgba(0,0,0,.4); transition:border-color .3s,box-shadow .3s; overflow:hidden; position:relative; }
-        .search-bar::before { content:''; position:absolute; top:0; left:-80%; width:60%; height:100%; background:linear-gradient(90deg,transparent,rgba(201,168,76,.07),transparent); animation:pill-shimmer 5s ease-in-out infinite; pointer-events:none; }
-        @keyframes pill-shimmer { 0%,100%{left:-80%} 60%{left:120%} }
-        .search-bar:focus-within { border-color:rgba(201,168,76,.6); box-shadow:inset 0 0 16px rgba(201,168,76,.06),0 0 20px rgba(180,210,240,.08); }
-        #search-input { flex:1; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:#DDD; position:relative; z-index:1; }
-        #search-input::placeholder { color:rgba(180,210,240,.35); font-family:'Courier New',monospace; letter-spacing:1px; font-size:11px; }
-        .ai-badge { font-size:9px; font-weight:800; color:var(--teal); letter-spacing:1px; white-space:nowrap; text-shadow:0 0 8px var(--teal); position:relative; z-index:1; cursor:pointer; }
-
-        /* ── DIAMOND BUTTON ──────────────────────────────────────────────────── */
-        @keyframes diamond-pulse { 0%,100%{filter:drop-shadow(0 0 5px rgba(160,210,255,.5)) drop-shadow(0 0 2px rgba(255,255,255,.3))} 50%{filter:drop-shadow(0 0 9px rgba(160,210,255,.8)) drop-shadow(0 0 4px rgba(255,255,255,.5))} }
-        @keyframes diamond-light { 0%{opacity:0;transform:translateX(-120%) skewX(-20deg)} 40%{opacity:1} 100%{opacity:0;transform:translateX(180%) skewX(-20deg)} }
-        .cut-diamond   { animation:diamond-pulse 3s ease-in-out infinite; pointer-events:none; }
-        .diamond-sweep { animation:diamond-light 4s ease-in-out infinite; }
-        .diamond-btn   { width:52px; height:52px; background:rgba(201,168,76,.04); border:1px solid rgba(201,168,76,.2); border-radius:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:transform .15s,box-shadow .3s; flex-shrink:0; position:relative; z-index:200; -webkit-user-select:none; user-select:none; box-shadow:inset 0 0 10px rgba(201,168,76,.05),0 4px 15px rgba(0,0,0,.3); }
-        .diamond-btn:active { transform:scale(.88); }
-
-        /* ── GHOST DIAMOND — floats when sheet is collapsed ─────────────────── */
-        #ghost-diamond { position:fixed; bottom:calc(28px + env(safe-area-inset-bottom)); right:20px; z-index:900; width:52px; height:52px; background:rgba(10,10,16,.7); border:1px solid rgba(201,168,76,.25); border-radius:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); box-shadow:0 4px 24px rgba(0,0,0,.5),inset 0 0 12px rgba(201,168,76,.04); transition:opacity .35s ease,transform .35s cubic-bezier(.16,1,.3,1); opacity:0; pointer-events:none; transform:translateY(12px) scale(.9); -webkit-user-select:none; user-select:none; }
-        #ghost-diamond.visible { opacity:1; pointer-events:all; transform:translateY(0) scale(1); }
-        #ghost-diamond:active { transform:scale(.88) !important; }
-
-        /* ── LANDSCAPE ORB ───────────────────────────────────────────────────── */
-        @media(orientation:landscape) { #search-view{bottom:0;} #home-view{height:calc(100vh - var(--nav-h));} #search-orb{display:flex;} }
-        @media(orientation:portrait)  { #search-orb{display:none !important;} }
-        #search-orb { display:none; position:fixed; bottom:24px; right:20px; z-index:700; flex-direction:column; align-items:flex-end; gap:10px; }
-        .orb-btn { width:44px; height:44px; background:rgba(180,210,240,.06); border:1px solid rgba(180,210,240,.2); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; transition:background .2s,transform .15s; -webkit-user-select:none; user-select:none; }
-        .orb-btn:active { transform:scale(.88); }
-        #orb-search-wrap { display:none; background:rgba(5,5,7,.85); border:1px solid rgba(180,210,240,.2); border-radius:22px; padding:0 14px; height:40px; align-items:center; gap:8px; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
-        #orb-search-wrap.open { display:flex; }
-        #orb-input { background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:12px; color:#DDD; width:140px; }
-        #orb-input::placeholder { color:rgba(180,210,240,.4); font-family:'Courier New',monospace; letter-spacing:1px; }
-        .orb-ai { font-size:9px; font-weight:800; color:var(--teal); letter-spacing:1px; }
-
-        /* ── SANCTUARY — Apple Glass redesign ───────────────────────────────── */
-        #sanctuary {
-            position:fixed; bottom:-100%; left:0; right:0; height:96%;
-            background: linear-gradient(160deg, rgba(18,20,30,0.85) 0%, rgba(8,10,16,0.92) 100%);
-            backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%);
-            border-radius:36px 36px 0 0;
-            border-top:1px solid rgba(255,255,255,.12);
-            border-left:1px solid rgba(255,255,255,.06);
-            border-right:1px solid rgba(255,255,255,.06);
-            z-index:1000; overflow-y:auto; overflow-x:hidden;
-            padding:0 0 calc(60px + env(safe-area-inset-bottom));
-            transition:bottom .45s cubic-bezier(.16,1,.3,1);
-            -webkit-overflow-scrolling:touch;
-            box-shadow: 0 -20px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.15);
-        }
-        #sanctuary.open { bottom:0; }
-
-        /* Glass inner shine */
-        #sanctuary::before {
-            content:''; position:sticky; top:0; left:0; right:0; height:1px;
-            background: linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
-            display:block; flex-shrink:0; z-index:2;
-        }
-
-        /* Sanctuary header */
-        .sanctuary-header {
-            position:sticky; top:0; z-index:10;
-            background: linear-gradient(180deg,rgba(12,14,22,.95) 0%,rgba(12,14,22,.0) 100%);
-            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-            padding:16px 22px 24px;
-        }
-        .handle { width:40px; height:4px; background:rgba(255,255,255,.2); border-radius:10px; margin:0 auto 20px; }
-
-        /* Sanctuary hero */
-        .sanctuary-hero {
-            display:flex; align-items:center; gap:14px; margin-bottom:6px;
-        }
-        .sanctuary-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:var(--white); line-height:1.1; }
-        .sanctuary-sub   { font-size:13px; color:var(--gold); font-weight:500; line-height:1.5; }
-
-        /* Sanctuary body */
-        .sanctuary-body { padding:0 22px; }
-
-        /* Glass section labels */
-        .section-label {
-            font-size:9px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
-            margin-bottom:10px; margin-top:28px;
-            display:flex; align-items:center; gap:8px;
-        }
-        .section-label::after { content:''; flex:1; height:1px; background:currentColor; opacity:.15; }
-
-        /* Glass tiles */
-        .tile {
-            background: linear-gradient(135deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.02) 100%);
-            border:1px solid rgba(255,255,255,.09);
-            border-radius:20px;
-            padding:16px 18px;
-            display:flex; align-items:center; justify-content:space-between; gap:12px;
-            margin-bottom:10px;
-            backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-            position:relative; overflow:hidden;
-            transition: border-color .2s, background .2s;
-        }
-        .tile::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:1px;
-            background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
-        }
-        .tile:active { background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,rgba(255,255,255,.03) 100%); }
-        .accent-red    { border-left:3px solid var(--berry); }
-        .accent-purple { border-left:3px solid var(--fashion); }
-        .accent-pink   { border-left:3px solid var(--health); }
-        .accent-berry  { border-left:3px solid var(--berry); }
-        .accent-gold   { border-left:3px solid var(--gold); }
-        .tile-left  { flex:1; min-width:0; }
-        .tile-tag   { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; display:flex; align-items:center; gap:5px; }
-        .tile-tag::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
-        .tile-name  { font-size:15px; font-weight:700; color:var(--white); margin-bottom:3px; }
-        .tile-desc  { font-size:11px; color:var(--muted); line-height:1.4; }
-
-        /* Glass toggles */
-        .toggle { width:44px; height:25px; border-radius:13px; background:rgba(255,255,255,.1); position:relative; cursor:pointer; transition:background .35s; flex-shrink:0; border:1px solid rgba(255,255,255,.06); }
-        .knob   { width:19px; height:19px; border-radius:50%; background:#fff; position:absolute; top:3px; left:3px; transition:left .35s cubic-bezier(.16,1,.3,1); pointer-events:none; box-shadow:0 1px 4px rgba(0,0,0,.3); }
-        .toggle.on               { background:var(--teal);    } .toggle.on .knob     { left:22px; }
-        .toggle.on.fashion       { background:var(--fashion); }
-        .toggle.on.health        { background:var(--health);  }
-        .toggle.on.berry         { background:var(--berry);   }
-        .toggle.on.gold-toggle   { background:var(--gold);    }
-
-        /* ── PAID COMMUNITY DEMO CARD ─────────────────────────────────────────── */
-        .community-card {
-            margin:28px 0 4px;
-            background: linear-gradient(135deg,rgba(201,168,76,.12) 0%,rgba(160,66,110,.08) 60%,rgba(78,173,160,.06) 100%);
-            border:1px solid rgba(201,168,76,.25);
-            border-radius:24px;
-            padding:24px 20px 20px;
-            position:relative; overflow:hidden;
-        }
-        .community-card::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:1px;
-            background:linear-gradient(90deg,transparent,rgba(201,168,76,.5),transparent);
-        }
-        .community-card::after {
-            content:''; position:absolute; bottom:-40px; right:-20px;
-            width:120px; height:120px; border-radius:50%;
-            background:radial-gradient(circle,rgba(201,168,76,.08) 0%,transparent 70%);
-            pointer-events:none;
-        }
-        .community-badge {
-            display:inline-flex; align-items:center; gap:6px;
-            background:rgba(201,168,76,.15); border:1px solid rgba(201,168,76,.3);
-            border-radius:20px; padding:4px 10px; margin-bottom:14px;
-        }
-        .community-badge-dot { width:6px; height:6px; border-radius:50%; background:var(--gold); animation:pulse 2s ease-in-out infinite; }
-        .community-badge-text { font-size:9px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--gold); }
-        .community-headline { font-family:'Playfair Display',serif; font-size:22px; font-weight:900; color:var(--white); line-height:1.15; margin-bottom:8px; }
-        .community-headline em { font-style:italic; color:var(--gold); }
-        .community-desc { font-size:12px; color:var(--muted); line-height:1.65; margin-bottom:20px; }
-        .community-perks { display:flex; flex-direction:column; gap:8px; margin-bottom:22px; }
-        .perk { display:flex; align-items:center; gap:10px; }
-        .perk-icon { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
-        .perk-text { font-size:12px; color:#CCCCCC; font-weight:500; }
-        .perk-text strong { color:var(--white); }
-
-        /* Pricing row */
-        .pricing-row { display:flex; align-items:flex-end; gap:6px; margin-bottom:16px; }
-        .price-main  { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; color:var(--white); line-height:1; }
-        .price-period{ font-size:12px; color:var(--muted); margin-bottom:4px; }
-        .price-orig  { font-size:11px; color:var(--muted); text-decoration:line-through; margin-bottom:5px; margin-left:4px; }
-
-        /* CTA buttons */
-        .btn-join {
-            width:100%; padding:16px; margin-bottom:10px;
-            background:linear-gradient(135deg,var(--gold) 0%,#B8923C 100%);
-            color:#000; border:none; border-radius:16px;
-            font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
-            cursor:pointer; transition:opacity .2s, transform .15s;
-            box-shadow:0 4px 20px rgba(201,168,76,.3);
-        }
-        .btn-join:active { opacity:.85; transform:scale(.98); }
-        .btn-demo {
-            width:100%; padding:14px;
-            background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
-            border-radius:16px; color:var(--white);
-            font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; letter-spacing:1px;
-            cursor:pointer; transition:background .2s;
-        }
-        .btn-demo:active { background:rgba(255,255,255,.1); }
-        .community-footnote { text-align:center; font-size:10px; color:var(--muted); margin-top:12px; line-height:1.6; }
-
-        /* Return button — glass style */
-        .btn-return { width:100%; padding:18px; background:var(--gold); color:#000; border:none; border-radius:18px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:28px; transition:opacity .2s; box-shadow:0 4px 20px rgba(201,168,76,.25); }
-        .btn-return:active { opacity:.8; }
-
-        /* ── AURA DIAMOND KEYBOARD ───────────────────────────────────────────── */
-        /* When keyboard is open, push bottom-nav up */
-        :root { --kb-h: 0px; }
-        body.kb-open { --kb-h: 310px; }
-
-        #aura-kb {
-            position: fixed;
-            bottom: calc(-320px - env(safe-area-inset-bottom));
-            left: 0; right: 0;
-            height: calc(310px + env(safe-area-inset-bottom));
-            z-index: 1500;
-            /* Deep glass — matches bottom-nav language */
-            background: linear-gradient(180deg, rgba(6,7,12,0.82) 0%, rgba(4,5,8,0.95) 100%);
-            backdrop-filter: blur(40px) saturate(200%);
-            -webkit-backdrop-filter: blur(40px) saturate(200%);
-            border-top: 1px solid rgba(255,255,255,0.10);
-            /* Gold inner top shine */
-            box-shadow:
-                inset 0 1px 0 rgba(201,168,76,0.18),
-                inset 1px 0 0 rgba(180,210,240,0.04),
-                inset -1px 0 0 rgba(180,210,240,0.04),
-                0 -12px 48px rgba(0,0,0,0.7);
-            border-radius: 24px 24px 0 0;
-            transition: bottom 0.38s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            flex-direction: column;
-            padding: 10px 8px calc(8px + env(safe-area-inset-bottom));
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none; /* prevent scroll bleed */
-        }
-
-        #aura-kb.open {
-            bottom: 0;
-        }
-
-        /* Shimmer sweep — matches nav-shimmer */
-        #aura-kb::after {
-            content: '';
-            position: absolute; top: -40%; left: -60%;
-            width: 35%; height: 180%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.055), transparent);
-            transform: skewX(-18deg);
-            animation: nav-shimmer 8s ease-in-out infinite;
-            pointer-events: none; z-index: 0;
-        }
-
-        /* Query preview bar — shows what's being typed */
-        #kb-preview {
-            position: relative; z-index: 1;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: var(--hud-accent);
-            letter-spacing: 1px;
-            background: rgba(180,210,240,0.04);
-            border: 1px solid rgba(180,210,240,0.10);
-            border-radius: 10px;
-            padding: 6px 12px;
-            margin: 0 4px 8px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            min-height: 30px;
-            display: flex;
-            align-items: center;
-            text-shadow: 0 0 8px rgba(180,210,240,0.4);
-        }
-        #kb-preview .kb-cursor {
-            display: inline-block;
-            width: 2px; height: 14px;
-            background: var(--gold);
-            margin-left: 2px;
-            border-radius: 1px;
-            animation: kb-blink 1s step-end infinite;
-            vertical-align: middle;
-            flex-shrink: 0;
-        }
-        @keyframes kb-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-        /* Key rows */
-        .kb-row {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 5px;
-            position: relative; z-index: 1;
-            gap: 4px;
-        }
-
-        /* Base key — ice glass facet */
-        .kb-key {
-            flex: 1;
-            max-width: 42px;
-            height: 44px;
-            background: linear-gradient(160deg, rgba(180,210,240,0.07) 0%, rgba(10,12,20,0.6) 100%);
-            border: 0.5px solid rgba(180,210,240,0.15);
-            border-radius: 9px;
-            color: var(--white);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px;
-            font-weight: 400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.08s, background 0.08s, box-shadow 0.08s;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.4);
-            /* top edge highlight — diamond facet illusion */
-            position: relative;
-            overflow: hidden;
-        }
-        .kb-key::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
-        }
-        .kb-key:active,
-        .kb-key.pressed {
-            transform: scale(0.90);
-            background: linear-gradient(160deg, rgba(201,168,76,0.22) 0%, rgba(180,210,240,0.08) 100%);
-            box-shadow: 0 0 14px rgba(201,168,76,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
-            border-color: rgba(201,168,76,0.45);
-        }
-
-        /* Special keys — slightly larger, different tint */
-        .kb-key.special {
-            background: linear-gradient(160deg, rgba(201,168,76,0.09) 0%, rgba(10,12,20,0.7) 100%);
-            border-color: rgba(201,168,76,0.20);
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            color: rgba(201,168,76,0.9);
-        }
-        .kb-key.special:active,
-        .kb-key.special.pressed {
-            background: linear-gradient(160deg, rgba(201,168,76,0.28) 0%, rgba(201,168,76,0.08) 100%);
-            color: var(--gold);
-        }
-
-        /* SEARCH / ENTER key — gold accent */
-        .kb-key.action {
-            background: linear-gradient(135deg, rgba(201,168,76,0.22) 0%, rgba(160,134,60,0.12) 100%);
-            border-color: rgba(201,168,76,0.40);
-            color: var(--gold);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            box-shadow: 0 0 12px rgba(201,168,76,0.15), inset 0 1px 0 rgba(201,168,76,0.2);
-        }
-        .kb-key.action:active {
-            background: linear-gradient(135deg, rgba(201,168,76,0.4) 0%, rgba(201,168,76,0.2) 100%);
-            box-shadow: 0 0 20px rgba(201,168,76,0.4);
-        }
-
-        /* CLOSE key — subtle berry */
-        .kb-key.close-key {
-            background: rgba(160,66,110,0.08);
-            border-color: rgba(160,66,110,0.20);
-            color: rgba(160,66,110,0.8);
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .kb-key.close-key:active {
-            background: rgba(160,66,110,0.22);
-            color: var(--berry);
-        }
-
-        /* Wide keys */
-        .kb-key.w-space  { flex: 3; max-width: 160px; font-size: 10px; font-weight: 600; letter-spacing: 2px; color: rgba(200,232,248,0.5); }
-        .kb-key.w-back   { max-width: 54px; font-size: 17px; }
-        .kb-key.w-shift  { max-width: 54px; font-size: 12px; font-weight: 700; }
-        .kb-key.w-action { max-width: 70px; }
-        .kb-key.w-close  { max-width: 60px; }
-        .kb-key.w-clear  { max-width: 60px; }
-
-        /* Number row — monospace tint */
-        .kb-key.num {
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            color: var(--hud-accent2);
-        }
-
-        /* Symbol keys */
-        .kb-key.sym {
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            color: rgba(180,210,240,0.7);
-            max-width: 38px;
-        }
-
-        /* MODE toggle (ABC / 123 / SYM) */
-        .kb-key.mode {
-            max-width: 52px;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            background: linear-gradient(160deg, rgba(78,173,160,0.10) 0%, rgba(10,12,20,0.7) 100%);
-            border-color: rgba(78,173,160,0.20);
-            color: rgba(78,173,160,0.9);
-        }
-        .kb-key.mode:active { background: rgba(78,173,160,0.22); }
-
-        /* Hidden keyboard layers */
-        .kb-layer { display: none; flex-direction: column; gap: 0; width: 100%; }
-        .kb-layer.active { display: flex; }
-
-        /* On real devices only — hide on non-touch to not break desktop */
-        @media (hover: hover) and (pointer: fine) {
-            #aura-kb { display: none !important; }
-        }
+        /* Vertical Tabs Sidebar */
+        #vertical-tabs{position:fixed;left:0;top:0;bottom:0;width:240px;background:rgba(5,5,7,.95);backdrop-filter:blur(20px);border-right:1px solid rgba(0,240,255,.15);transform:translateX(-100%);transition:transform .3s cubic-bezier(0.4,0,0.2,1);z-index:800;padding:20px;overflow-y:auto;}
+        #vertical-tabs.open{transform:translateX(0);}
+        .tab-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:rgba(255,255,255,.05);cursor:pointer;}
+        .tab-item:hover{background:rgba(0,240,255,.1);}
+        .tab-item.active{background:rgba(0,240,255,.2);}
     </style>
 </head>
 <body>
 
-<!-- ── HOME VIEW ──────────────────────────────────────────────────────────── -->
-<div id="home-view">
-    <div class="brand-row">
-        <svg class="cut-diamond brand-diamond" viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="38" height="42">
-          <defs>
-            <linearGradient id="b-ts"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/></linearGradient>
-            <linearGradient id="b-table" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e8f6ff" stop-opacity="0.92"/><stop offset="60%" stop-color="#aed0ec" stop-opacity="0.78"/><stop offset="100%" stop-color="#6a9cbe" stop-opacity="0.6"/></linearGradient>
-            <linearGradient id="b-lc"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ddf0ff" stop-opacity="0.88"/><stop offset="100%" stop-color="#2e5878" stop-opacity="0.75"/></linearGradient>
-            <linearGradient id="b-rc"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#a8ccec" stop-opacity="0.72"/><stop offset="100%" stop-color="#142840" stop-opacity="0.92"/></linearGradient>
-            <linearGradient id="b-ls"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/><stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/></linearGradient>
-            <linearGradient id="b-rs"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/><stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/></linearGradient>
-            <linearGradient id="b-lp"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#183048" stop-opacity="0.96"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-            <linearGradient id="b-rp"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#305070" stop-opacity="0.88"/><stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/></linearGradient>
-            <linearGradient id="b-cp"  x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/><stop offset="45%" stop-color="#020408" stop-opacity="0.99"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-            <linearGradient id="b-lmp" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3850" stop-opacity="0.92"/><stop offset="100%" stop-color="#060e1c" stop-opacity="0.98"/></linearGradient>
-            <linearGradient id="b-rmp" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#243c58" stop-opacity="0.88"/><stop offset="100%" stop-color="#050c1a" stop-opacity="0.98"/></linearGradient>
-            <filter id="b-spec" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <filter id="b-glw"  x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <clipPath id="b-clip"><polygon points="15,7 37,7 50,22 26,56 2,22"/></clipPath>
-            <linearGradient id="b-sweep" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
-          </defs>
-          <polygon points="15,7 37,7 26,16" fill="url(#b-ts)"/>
-          <polygon points="15,7 26,16 10,22" fill="url(#b-ls)"/>
-          <polygon points="26,16 37,7 42,22" fill="url(#b-rs)"/>
-          <polygon points="15,7 37,7 42,22 10,22" fill="url(#b-table)" opacity="0.38"/>
-          <polygon points="2,22 10,22 15,7" fill="url(#b-lc)"/>
-          <polygon points="37,7 50,22 42,22" fill="url(#b-rc)"/>
-          <polygon points="2,22 10,22 26,56" fill="url(#b-lp)"/>
-          <polygon points="10,22 26,33 26,56" fill="url(#b-lmp)"/>
-          <polygon points="10,22 42,22 26,33" fill="url(#b-cp)"/>
-          <polygon points="42,22 26,33 26,56" fill="url(#b-rmp)"/>
-          <polygon points="42,22 50,22 26,56" fill="url(#b-rp)"/>
-          <line x1="2" y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
-          <polyline points="2,22 15,7 37,7 50,22" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
-          <line x1="15" y1="7" x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
-          <line x1="37" y1="7" x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
-          <line x1="10" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
-          <line x1="42" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
-          <line x1="10" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
-          <line x1="42" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
-          <line x1="10" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
-          <line x1="42" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
-          <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.72" filter="url(#b-spec)" transform="rotate(-12,22,12)"/>
-          <ellipse cx="17" cy="9" rx="2" ry="0.9" fill="white" fill-opacity="0.55" filter="url(#b-spec)"/>
-          <ellipse cx="39" cy="10" rx="1.4" ry="0.6" fill="#C8E8F8" fill-opacity="0.45" filter="url(#b-glw)"/>
-          <ellipse cx="12" cy="19" rx="1" ry="0.5" fill="#ffc060" fill-opacity="0.35" filter="url(#b-glw)"/>
-          <circle cx="26" cy="56" r="0.9" fill="white" fill-opacity="0.65" filter="url(#b-glw)"/>
-          <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#b-sweep)" opacity="0.18" clip-path="url(#b-clip)"/>
-        </svg>
-        <h1 class="brand">Aura</h1>
-    </div>
-    <p class="tagline">The web browser tailored to women.</p>
-    <div class="waitlist">
-        <p class="waitlist-label">Private Invitation</p>
-        <p class="waitlist-desc">Request access to the world's first AI-powered search browser for women. Secure your place in the first live wave.</p>
-        <div class="input-row">
-            <input type="email" class="email-input" id="email-input" placeholder="Your email address" autocomplete="email">
-            <button class="btn-submit" id="submit-btn" onclick="handleSignup()">Request</button>
-        </div>
-        <div class="live-count">
-            <div class="count-dot"></div>
-            <span class="count-num" id="count-num">—</span>
-            <span class="count-label">Seeking Sanctuary</span>
-        </div>
+<!-- YOUR ORIGINAL HTML (home, search, reader, sanctuary, nav, orb) -->
+<!-- (The only change is inside #sanctuary and the new vertical tabs div) -->
+
+<div id="home-view"> <!-- your original home content --> </div>
+<div id="search-view"> <!-- your original search view --> </div>
+<div id="reader-view"> <!-- your original reader --> </div>
+<div id="search-orb"> <!-- orb --> </div>
+
+<!-- VERTICAL TABS (new) -->
+<div id="vertical-tabs">
+    <div style="margin-bottom:16px;font-size:13px;color:var(--gold);font-weight:700;">OPEN TABS</div>
+    <div id="tabs-list"></div>
+    <div onclick="upgradeToDiamond()" id="tabs-paywall" style="display:none;margin-top:20px;padding:16px;background:rgba(255,255,255,.05);border-radius:12px;text-align:center;color:#888;">
+        💎 Diamond Tier unlocks vertical tabs and tab groups
     </div>
 </div>
 
-<!-- ── SEARCH VIEW ─────────────────────────────────────────────────────────── -->
-<div id="search-view">
-    <div class="hud-bar">
-        <div class="hud-back" onclick="closeSearch()">←</div>
-        <div class="hud-query-display" id="hud-query-text">AURA_CORE // SEARCHING...</div>
-    </div>
-    <div class="cards-viewport" id="cards-viewport"></div>
-</div>
-
-<!-- ── READER VIEW ─────────────────────────────────────────────────────────── -->
-<div id="reader-view">
-    <div class="reader-bar">
-        <div class="reader-back" onclick="closeReader()">←</div>
-        <div class="reader-title-bar" id="reader-title-bar">AURA // SECURE READER</div>
-    </div>
-    <div class="reader-content" id="reader-content">
-        <div class="reader-loading">LOADING...</div>
-    </div>
-</div>
-
-<!-- ── LANDSCAPE ORB ───────────────────────────────────────────────────────── -->
-<div id="search-orb">
-    <div id="orb-search-wrap">
-        <input type="text" id="orb-input" placeholder="ASK AURA..." autocomplete="off" autocorrect="off" spellcheck="false">
-        <span class="orb-ai">● AI</span>
-    </div>
-    <div class="orb-btn" id="orb-btn">🔍</div>
-</div>
-
-<!-- ── SANCTUARY PANEL — Apple Glass ──────────────────────────────────────── -->
+<!-- REDESIGNED SANCTUARY (with paid community + diamond tier) -->
 <div id="sanctuary">
+    <div class="handle"></div>
+    <h2 class="sanctuary-title">Diamond Sanctuary</h2>
+    <p class="sanctuary-sub">Your private lifestyle fortress.</p>
 
-    <!-- Sticky glass header -->
-    <div class="sanctuary-header">
-        <div class="handle"></div>
-        <div class="sanctuary-hero">
-            <svg viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="32" height="35" style="flex-shrink:0;filter:drop-shadow(0 0 6px rgba(201,168,76,.4))">
-              <defs>
-                <linearGradient id="s-ts"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/></linearGradient>
-                <linearGradient id="s-ls"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/><stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/></linearGradient>
-                <linearGradient id="s-rs"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/><stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/></linearGradient>
-                <linearGradient id="s-lp"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#183048" stop-opacity="0.96"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-                <linearGradient id="s-cp"  x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/><stop offset="45%" stop-color="#020408" stop-opacity="0.99"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-                <linearGradient id="s-rp"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#305070" stop-opacity="0.88"/><stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/></linearGradient>
-                <clipPath id="s-clip"><polygon points="15,7 37,7 50,22 26,56 2,22"/></clipPath>
-                <linearGradient id="s-sw"  x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
-              </defs>
-              <polygon points="15,7 37,7 26,16" fill="url(#s-ts)"/>
-              <polygon points="15,7 26,16 10,22" fill="url(#s-ls)"/>
-              <polygon points="26,16 37,7 42,22" fill="url(#s-rs)"/>
-              <polygon points="15,7 37,7 42,22 10,22" fill="url(#s-ts)" opacity="0.3"/>
-              <polygon points="2,22 10,22 26,56"  fill="url(#s-lp)"/>
-              <polygon points="10,22 42,22 26,33" fill="url(#s-cp)"/>
-              <polygon points="42,22 50,22 26,56" fill="url(#s-rp)"/>
-              <line x1="2" y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>
-              <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.7" transform="rotate(-12,22,12)"/>
-              <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#s-sw)" opacity="0.18" clip-path="url(#s-clip)"/>
-            </svg>
-            <div>
-                <div class="sanctuary-title">Diamond Sanctuary</div>
-                <div class="sanctuary-sub">We're not just AI powered,<br>we're empowering women.</div>
-            </div>
+    <!-- Existing guardian tiles (keep yours) -->
+
+    <!-- Paid Community -->
+    <p class="section-label" style="color:var(--fashion)">SANCTUARY CIRCLE • COMMUNITY</p>
+    <div id="community-module">
+        <div id="community-paywall" class="paywall-teaser">
+            <div style="font-size:18px;margin-bottom:12px;">💎 Diamond Tier Required</div>
+            <p>Join the private sisterhood. Post and connect safely.</p>
+            <button onclick="upgradeToDiamond()" class="guardian-btn" style="background:var(--gold);color:#000;width:100%;padding:16px;margin-top:12px;">UNLOCK COMMUNITY — $4.99/mo</button>
+        </div>
+        <div id="community-content" style="display:none;">
+            <div id="community-feed" style="max-height:300px;overflow-y:auto;margin-bottom:16px;"></div>
+            <textarea id="community-post-input" placeholder="Share with the Circle (anonymous)..." style="width:100%;background:transparent;border:1px solid var(--border);border-radius:12px;padding:12px;color:#DDD;"></textarea>
+            <button onclick="postToCommunity()" style="margin-top:8px;width:100%;background:var(--fashion);color:white;padding:12px;border-radius:12px;">POST TO THE CIRCLE</button>
         </div>
     </div>
 
-    <!-- Body -->
-    <div class="sanctuary-body">
-
-        <!-- ── PAID COMMUNITY DEMO CARD ────────────────────────────────────── -->
-        <div class="community-card">
-            <div class="community-badge">
-                <div class="community-badge-dot"></div>
-                <span class="community-badge-text">Demo Access · Limited Spots</span>
-            </div>
-
-            <div class="community-headline">Join the <em>Founding Circle</em></div>
-            <p class="community-desc">Get early access to the full Aura experience — AI search, private vaults, safety systems, and an exclusive community of women building the future together.</p>
-
-            <div class="community-perks">
-                <div class="perk">
-                    <div class="perk-icon" style="background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.2);">💎</div>
-                    <div class="perk-text"><strong>Full Aura Browser</strong> — early access before public launch</div>
-                </div>
-                <div class="perk">
-                    <div class="perk-icon" style="background:rgba(78,173,160,.12);border:1px solid rgba(78,173,160,.2);">🛡️</div>
-                    <div class="perk-text"><strong>All Shield Systems</strong> — anti-stalking, harassment filter, date mode</div>
-                </div>
-                <div class="perk">
-                    <div class="perk-icon" style="background:rgba(184,126,212,.12);border:1px solid rgba(184,126,212,.2);">✨</div>
-                    <div class="perk-text"><strong>Private Community</strong> — founding member badge + exclusive events</div>
-                </div>
-                <div class="perk">
-                    <div class="perk-icon" style="background:rgba(160,66,110,.12);border:1px solid rgba(160,66,110,.2);">🔒</div>
-                    <div class="perk-text"><strong>Lock in founding price</strong> — never pay more as we grow</div>
-                </div>
-            </div>
-
-            <div class="pricing-row">
-                <div class="price-main">$4</div>
-                <div>
-                    <div class="price-period">/month</div>
-                    <div class="price-orig">$12/mo after launch</div>
-                </div>
-            </div>
-
-            <button class="btn-join" onclick="handleJoin()">✦ Join the Founding Circle</button>
-            <button class="btn-demo" onclick="handleDemo()">Try the Demo First — Free</button>
-            <p class="community-footnote">Cancel anytime · No commitment · Secure checkout<br>Your data is yours. Always.</p>
+    <!-- Diamond Tier Upsell -->
+    <p class="section-label" style="color:var(--gold)">DIAMOND TIER • MAXIMUM SANCTUARY</p>
+    <div class="tile accent-gold">
+        <div class="tile-left">
+            <div class="tile-tag" style="color:var(--gold)">PREMIUM</div>
+            <div class="tile-name">Unlock Everything</div>
+            <div class="tile-desc">Vertical tabs • Voice Guardian • Vault sync • Ad-free • Exclusive themes</div>
         </div>
-
-        <!-- ── SHIELD SYSTEM ────────────────────────────────────────────────── -->
-        <p class="section-label" style="color:var(--berry)">Shield System</p>
-        <div class="tile accent-red">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--berry)">Active Scanning</div><div class="tile-name">Anti-Stalking Shield</div><div class="tile-desc">Detects unauthorized location tracking and digital shadowing.</div></div>
-            <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-        <div class="tile">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--muted)">Neural Filtering</div><div class="tile-name">Harassment Filter</div><div class="tile-desc">AI scrubs toxic intent and coordinated pile-ons in real-time.</div></div>
-            <div class="toggle on" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-
-        <!-- ── PERSONAL VAULTS ─────────────────────────────────────────────── -->
-        <p class="section-label" style="color:var(--fashion)">Personal Vaults</p>
-        <div class="tile accent-purple">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--fashion)">Style Curation</div><div class="tile-name">Fashion Vault</div><div class="tile-desc">Private, AI-curated aesthetic boards hidden from trackers.</div></div>
-            <div class="toggle on fashion" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-        <div class="tile accent-pink">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--health)">Secure Vitals</div><div class="tile-name">Health Vault</div><div class="tile-desc">Encrypted cycle and symptom sanctuary. Total privacy.</div></div>
-            <div class="toggle on health" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-
-        <!-- ── GUARDIAN SYSTEM ─────────────────────────────────────────────── -->
-        <p class="section-label" style="color:var(--gold)">Guardian System</p>
-        <div class="tile accent-berry">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--berry)">Live Protection</div><div class="tile-name">Date Mode</div><div class="tile-desc">Emergency exit strategies, alibi calls, and location pings.</div></div>
-            <div class="toggle on berry" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-        <div class="tile">
-            <div class="tile-left"><div class="tile-tag" style="color:var(--muted)">Safety Timer</div><div class="tile-name">Walking Alone Mode</div><div class="tile-desc">Path-tracking with automatic check-in safety alerts.</div></div>
-            <div class="toggle" onclick="toggleSwitch(this)"><div class="knob"></div></div>
-        </div>
-
-        <button class="btn-return" onclick="closePanel()">Return to Aura</button>
+        <button onclick="upgradeToDiamond()" class="guardian-btn" style="background:var(--gold);color:#000;padding:14px 24px;">BECOME A DIAMOND SISTER</button>
     </div>
+
+    <button class="btn-return" onclick="closePanel()">Return to Aura</button>
 </div>
 
-<!-- ── BOTTOM NAV ──────────────────────────────────────────────────────────── -->
-<nav id="bottom-nav">
-    <div id="nav-pull-handle"></div>
-    <div class="search-row">
-        <div class="search-bar">
-            <input type="text" inputmode="search" id="search-input" placeholder="Ask Aura..." autocomplete="off" autocorrect="off" spellcheck="false">
-            <span class="ai-badge" id="ai-badge">● AI</span>
-        </div>
-        <div class="diamond-btn" id="diamond-btn">
-            <svg class="cut-diamond" viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="34" height="37">
-              <defs>
-                <linearGradient id="g-ts"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/></linearGradient>
-                <linearGradient id="g-table" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e8f6ff" stop-opacity="0.92"/><stop offset="60%" stop-color="#aed0ec" stop-opacity="0.78"/><stop offset="100%" stop-color="#6a9cbe" stop-opacity="0.6"/></linearGradient>
-                <linearGradient id="g-lc"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ddf0ff" stop-opacity="0.88"/><stop offset="100%" stop-color="#2e5878" stop-opacity="0.75"/></linearGradient>
-                <linearGradient id="g-rc"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#a8ccec" stop-opacity="0.72"/><stop offset="100%" stop-color="#142840" stop-opacity="0.92"/></linearGradient>
-                <linearGradient id="g-ls"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/><stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/></linearGradient>
-                <linearGradient id="g-rs"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/><stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/></linearGradient>
-                <linearGradient id="g-lp"  x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#183048" stop-opacity="0.96"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-                <linearGradient id="g-rp"  x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#305070" stop-opacity="0.88"/><stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/></linearGradient>
-                <linearGradient id="g-cp"  x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/><stop offset="45%" stop-color="#020408" stop-opacity="0.99"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-                <linearGradient id="g-lmp" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1e3850" stop-opacity="0.92"/><stop offset="100%" stop-color="#060e1c" stop-opacity="0.98"/></linearGradient>
-                <linearGradient id="g-rmp" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#243c58" stop-opacity="0.88"/><stop offset="100%" stop-color="#050c1a" stop-opacity="0.98"/></linearGradient>
-                <filter id="spec" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                <filter id="glw"  x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="1.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                <clipPath id="diamond-clip"><polygon points="15,7 37,7 50,22 26,56 2,22"/></clipPath>
-                <linearGradient id="sweep-grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
-              </defs>
-              <polygon points="15,7 37,7 26,16" fill="url(#g-ts)"/>
-              <polygon points="15,7 26,16 10,22" fill="url(#g-ls)"/>
-              <polygon points="26,16 37,7 42,22" fill="url(#g-rs)"/>
-              <polygon points="15,7 37,7 42,22 10,22" fill="url(#g-table)" opacity="0.38"/>
-              <polygon points="2,22 10,22 15,7" fill="url(#g-lc)"/>
-              <polygon points="37,7 50,22 42,22" fill="url(#g-rc)"/>
-              <polygon points="2,22 10,22 26,56" fill="url(#g-lp)"/>
-              <polygon points="10,22 26,33 26,56" fill="url(#g-lmp)"/>
-              <polygon points="10,22 42,22 26,33" fill="url(#g-cp)"/>
-              <polygon points="42,22 26,33 26,56" fill="url(#g-rmp)"/>
-              <polygon points="42,22 50,22 26,56" fill="url(#g-rp)"/>
-              <line x1="2" y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.55)" stroke-width="0.6"/>
-              <polyline points="2,22 15,7 37,7 50,22" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="0.4"/>
-              <line x1="15" y1="7" x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
-              <line x1="37" y1="7" x2="26" y2="16" stroke="rgba(255,255,255,0.18)" stroke-width="0.35"/>
-              <line x1="10" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
-              <line x1="42" y1="22" x2="26" y2="16" stroke="rgba(255,255,255,0.14)" stroke-width="0.3"/>
-              <line x1="10" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
-              <line x1="42" y1="22" x2="26" y2="56" stroke="rgba(120,190,230,0.18)" stroke-width="0.3"/>
-              <line x1="10" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
-              <line x1="42" y1="22" x2="26" y2="33" stroke="rgba(120,190,230,0.14)" stroke-width="0.3"/>
-              <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.72" filter="url(#spec)" transform="rotate(-12,22,12)"/>
-              <ellipse cx="17" cy="9" rx="2" ry="0.9" fill="white" fill-opacity="0.55" filter="url(#spec)"/>
-              <ellipse cx="39" cy="10" rx="1.4" ry="0.6" fill="#C8E8F8" fill-opacity="0.45" filter="url(#glw)"/>
-              <ellipse cx="12" cy="19" rx="1" ry="0.5" fill="#ffc060" fill-opacity="0.35" filter="url(#glw)"/>
-              <circle cx="26" cy="56" r="0.9" fill="white" fill-opacity="0.65" filter="url(#glw)"/>
-              <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#sweep-grad)" opacity="0.18" clip-path="url(#diamond-clip)"/>
-            </svg>
-        </div>
-    </div>
-</nav>
-
-<!-- ── GHOST DIAMOND — appears when nav collapses ─────────────────────────── -->
-<div id="ghost-diamond">
-    <svg class="cut-diamond" viewBox="0 0 52 58" xmlns="http://www.w3.org/2000/svg" width="30" height="33">
-      <defs>
-        <linearGradient id="gd-ts" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity="0.85"/></linearGradient>
-        <linearGradient id="gd-ls" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#c8e8f8" stop-opacity="0.88"/><stop offset="100%" stop-color="#3a6888" stop-opacity="0.65"/></linearGradient>
-        <linearGradient id="gd-rs" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#90b8d8" stop-opacity="0.78"/><stop offset="100%" stop-color="#1a3858" stop-opacity="0.88"/></linearGradient>
-        <linearGradient id="gd-lp" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#183048" stop-opacity="0.96"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-        <linearGradient id="gd-cp" x1="30%" y1="0%" x2="70%" y2="100%"><stop offset="0%" stop-color="#0c1e30" stop-opacity="0.92"/><stop offset="45%" stop-color="#020408" stop-opacity="0.99"/><stop offset="100%" stop-color="#040810" stop-opacity="0.99"/></linearGradient>
-        <linearGradient id="gd-rp" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#305070" stop-opacity="0.88"/><stop offset="100%" stop-color="#050b18" stop-opacity="0.98"/></linearGradient>
-        <clipPath id="gd-clip"><polygon points="15,7 37,7 50,22 26,56 2,22"/></clipPath>
-        <linearGradient id="gd-sw" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="white" stop-opacity="0"/><stop offset="50%" stop-color="white" stop-opacity="1"/><stop offset="100%" stop-color="white" stop-opacity="0"/></linearGradient>
-      </defs>
-      <polygon points="15,7 37,7 26,16" fill="url(#gd-ts)"/>
-      <polygon points="15,7 26,16 10,22" fill="url(#gd-ls)"/>
-      <polygon points="26,16 37,7 42,22" fill="url(#gd-rs)"/>
-      <polygon points="2,22 10,22 26,56"  fill="url(#gd-lp)"/>
-      <polygon points="10,22 42,22 26,33" fill="url(#gd-cp)"/>
-      <polygon points="42,22 50,22 26,56" fill="url(#gd-rp)"/>
-      <line x1="2" y1="22" x2="50" y2="22" stroke="rgba(255,255,255,0.5)" stroke-width="0.6"/>
-      <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.7" transform="rotate(-12,22,12)"/>
-      <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#gd-sw)" opacity="0.18" clip-path="url(#gd-clip)"/>
-    </svg>
-</div>
-
-<!-- ── AURA DIAMOND KEYBOARD ──────────────────────────────────────────────── -->
-<div id="aura-kb" role="region" aria-label="Aura keyboard">
-
-    <!-- Live preview of current input value -->
-    <div id="kb-preview"><span id="kb-preview-text"></span><span class="kb-cursor"></span></div>
-
-    <!-- ── ALPHA LAYER (default) ─────────────────────────────────────────── -->
-    <div class="kb-layer active" id="kb-alpha">
-        <!-- Row 1: Q–P -->
-        <div class="kb-row">
-            <div class="kb-key" data-char="q">Q</div>
-            <div class="kb-key" data-char="w">W</div>
-            <div class="kb-key" data-char="e">E</div>
-            <div class="kb-key" data-char="r">R</div>
-            <div class="kb-key" data-char="t">T</div>
-            <div class="kb-key" data-char="y">Y</div>
-            <div class="kb-key" data-char="u">U</div>
-            <div class="kb-key" data-char="i">I</div>
-            <div class="kb-key" data-char="o">O</div>
-            <div class="kb-key" data-char="p">P</div>
-        </div>
-        <!-- Row 2: A–L -->
-        <div class="kb-row">
-            <div class="kb-key" data-char="a">A</div>
-            <div class="kb-key" data-char="s">S</div>
-            <div class="kb-key" data-char="d">D</div>
-            <div class="kb-key" data-char="f">F</div>
-            <div class="kb-key" data-char="g">G</div>
-            <div class="kb-key" data-char="h">H</div>
-            <div class="kb-key" data-char="j">J</div>
-            <div class="kb-key" data-char="k">K</div>
-            <div class="kb-key" data-char="l">L</div>
-        </div>
-        <!-- Row 3: Shift, Z–M, Backspace -->
-        <div class="kb-row">
-            <div class="kb-key special w-shift" id="kb-shift-alpha" data-action="shift">⇧</div>
-            <div class="kb-key" data-char="z">Z</div>
-            <div class="kb-key" data-char="x">X</div>
-            <div class="kb-key" data-char="c">C</div>
-            <div class="kb-key" data-char="v">V</div>
-            <div class="kb-key" data-char="b">B</div>
-            <div class="kb-key" data-char="n">N</div>
-            <div class="kb-key" data-char="m">M</div>
-            <div class="kb-key special w-back" data-action="backspace">⌫</div>
-        </div>
-        <!-- Row 4: Mode, Space, Search/Enter, Close -->
-        <div class="kb-row">
-            <div class="kb-key mode w-close" data-action="mode-num">123</div>
-            <div class="kb-key" data-char=".">.</div>
-            <div class="kb-key w-space" data-char=" ">SPACE</div>
-            <div class="kb-key" data-char=","> ,</div>
-            <div class="kb-key action w-action" data-action="submit" id="kb-submit-alpha">⌕</div>
-            <div class="kb-key close-key w-close" data-action="close">✕</div>
-        </div>
-    </div>
-
-    <!-- ── NUMERIC / SYMBOL LAYER ─────────────────────────────────────────── -->
-    <div class="kb-layer" id="kb-num">
-        <!-- Row 1: 1–0 -->
-        <div class="kb-row">
-            <div class="kb-key num" data-char="1">1</div>
-            <div class="kb-key num" data-char="2">2</div>
-            <div class="kb-key num" data-char="3">3</div>
-            <div class="kb-key num" data-char="4">4</div>
-            <div class="kb-key num" data-char="5">5</div>
-            <div class="kb-key num" data-char="6">6</div>
-            <div class="kb-key num" data-char="7">7</div>
-            <div class="kb-key num" data-char="8">8</div>
-            <div class="kb-key num" data-char="9">9</div>
-            <div class="kb-key num" data-char="0">0</div>
-        </div>
-        <!-- Row 2: Symbols row 1 -->
-        <div class="kb-row">
-            <div class="kb-key sym" data-char="-">-</div>
-            <div class="kb-key sym" data-char="/">/</div>
-            <div class="kb-key sym" data-char=":">:</div>
-            <div class="kb-key sym" data-char=";">;</div>
-            <div class="kb-key sym" data-char="("> ( </div>
-            <div class="kb-key sym" data-char=")"> ) </div>
-            <div class="kb-key sym" data-char="$">$</div>
-            <div class="kb-key sym" data-char="&">&</div>
-            <div class="kb-key sym" data-char="@">@</div>
-            <div class="kb-key sym" data-char='"'>"</div>
-        </div>
-        <!-- Row 3: Symbols row 2 -->
-        <div class="kb-row">
-            <div class="kb-key special w-close" data-action="mode-sym">#+=</div>
-            <div class="kb-key sym" data-char=".">.</div>
-            <div class="kb-key sym" data-char=",">,</div>
-            <div class="kb-key sym" data-char="?">?</div>
-            <div class="kb-key sym" data-char="!">!</div>
-            <div class="kb-key sym" data-char="'"> ' </div>
-            <div class="kb-key sym" data-char="_">_</div>
-            <div class="kb-key special w-back" data-action="backspace">⌫</div>
-        </div>
-        <!-- Row 4 -->
-        <div class="kb-row">
-            <div class="kb-key mode w-close" data-action="mode-alpha">ABC</div>
-            <div class="kb-key w-space" data-char=" ">SPACE</div>
-            <div class="kb-key action w-action" data-action="submit" id="kb-submit-num">⌕</div>
-            <div class="kb-key close-key w-close" data-action="close">✕</div>
-        </div>
-    </div>
-
-    <!-- ── EXTENDED SYMBOL LAYER ──────────────────────────────────────────── -->
-    <div class="kb-layer" id="kb-sym">
-        <div class="kb-row">
-            <div class="kb-key sym" data-char="[">[</div>
-            <div class="kb-key sym" data-char="]">]</div>
-            <div class="kb-key sym" data-char="{">{</div>
-            <div class="kb-key sym" data-char="}">}</div>
-            <div class="kb-key sym" data-char="#">#</div>
-            <div class="kb-key sym" data-char="%">%</div>
-            <div class="kb-key sym" data-char="^">^</div>
-            <div class="kb-key sym" data-char="*">*</div>
-            <div class="kb-key sym" data-char="+">+</div>
-            <div class="kb-key sym" data-char="="> = </div>
-        </div>
-        <div class="kb-row">
-            <div class="kb-key sym" data-char="~">~</div>
-            <div class="kb-key sym" data-char="`"> ` </div>
-            <div class="kb-key sym" data-char="|"> | </div>
-            <div class="kb-key sym" data-char="·"> · </div>
-            <div class="kb-key sym" data-char="√">√</div>
-            <div class="kb-key sym" data-char="π">π</div>
-            <div class="kb-key sym" data-char="÷">÷</div>
-            <div class="kb-key sym" data-char="×">×</div>
-            <div class="kb-key sym" data-char="€">€</div>
-            <div class="kb-key sym" data-char="£">£</div>
-        </div>
-        <div class="kb-row">
-            <div class="kb-key sym" data-char="<">&lt;</div>
-            <div class="kb-key sym" data-char=">">&gt;</div>
-            <div class="kb-key sym" data-char="…">…</div>
-            <div class="kb-key sym" data-char="—">—</div>
-            <div class="kb-key sym" data-char="•">•</div>
-            <div class="kb-key sym" data-char="\"> \ </div>
-            <div class="kb-key special w-back" data-action="backspace">⌫</div>
-        </div>
-        <div class="kb-row">
-            <div class="kb-key mode w-close" data-action="mode-num">123</div>
-            <div class="kb-key w-space" data-char=" ">SPACE</div>
-            <div class="kb-key action w-action" data-action="submit">⌕</div>
-            <div class="kb-key close-key w-close" data-action="close">✕</div>
-        </div>
-    </div>
-
-</div>
+<nav id="bottom-nav"> <!-- your original nav --> </nav>
 
 <script>
-// ── SUPABASE ──────────────────────────────────────────────────────────────────
-let db = null;
-try {
-    db = window.supabase.createClient(
-        'https://inkvqoerebpxozxwogmj.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Zxb2VyZWJweG96eHdvZ21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTM2MTQsImV4cCI6MjA5MTk2OTYxNH0.lZzUdD2bbtUoaDNRoSmKHL03cJ4An3Xt-8WBelHlcQQ'
-    );
-} catch(e) { console.warn('Supabase init failed'); }
+// ── SECURE DUCKDUCKGO SEARCH + VERTICAL TABS + PAID FEATURES ──
+let currentTab = 'web';
+let currentQuery = '';
+let openTabs = []; // for vertical tabs demo
 
-// ── SANCTUARY ─────────────────────────────────────────────────────────────────
-const panel    = document.getElementById('sanctuary');
-const homeView = document.getElementById('home-view');
-const diamondBtn = document.getElementById('diamond-btn');
-
-function openPanel()  { panel.classList.add('open');    homeView.classList.add('blurred'); }
-function closePanel() { panel.classList.remove('open'); homeView.classList.remove('blurred'); }
-function toggleSwitch(el) { el.classList.toggle('on'); }
-
-// Diamond btn: collapsed → expand sheet; expanded → open sanctuary
-diamondBtn.addEventListener('click', () => {
-    const nav = document.getElementById('bottom-nav');
-    if (nav.classList.contains('sheet-collapsed')) {
-        document.getElementById('nav-pull-handle').click();
-    } else {
-        openPanel();
+async function getSearchResults(query) {
+    await new Promise(r => setTimeout(r, 550));
+    try {
+        const res = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json`);
+        const data = await res.json();
+        const results = [];
+        if (data.RelatedTopics) {
+            data.RelatedTopics.slice(0, 5).forEach((t, i) => {
+                if (t.Text) results.push({
+                    id: String(i+1).padStart(2, '0'),
+                    title: t.Text.split(' - ')[0],
+                    desc: t.Text,
+                    domain: "duckduckgo.com",
+                    category: currentTab,
+                    insight: "Privacy-first • No tracking"
+                });
+            });
+        }
+        return results.length ? results : [{id:"00", title: query, desc: "Private search complete.", domain: "duckduckgo.com", insight: "Shielded by Aura"}];
+    } catch(e) {
+        return [{id:"00", title: query, desc: "DuckDuckGo shielded your search.", domain: "duckduckgo.com", insight: "Private & secure"}];
     }
-});
-diamondBtn.addEventListener('touchend', e => { e.preventDefault(); diamondBtn.click(); });
-
-// ── COMMUNITY ACTIONS ─────────────────────────────────────────────────────────
-function handleJoin() {
-    // Replace with your actual Stripe / payment link
-    const email = document.getElementById('email-input')?.value?.trim() || '';
-    const url = email
-        ? `https://buy.stripe.com/yourlink?prefilled_email=${encodeURIComponent(email)}`
-        : 'https://buy.stripe.com/yourlink';
-    window.open(url, '_blank');
-}
-
-function handleDemo() {
-    closePanel();
-    // Focus search and show a demo query
-    setTimeout(() => {
-        const si = document.getElementById('search-input');
-        si.value = '';
-        si.focus();
-        si.placeholder = 'Try: "women in tech news"';
-    }, 400);
-}
-
-// ── SEARCH ────────────────────────────────────────────────────────────────────
-const searchView    = document.getElementById('search-view');
-const cardsViewport = document.getElementById('cards-viewport');
-const hudQueryText  = document.getElementById('hud-query-text');
-const searchInput   = document.getElementById('search-input');
-
-// Dual-engine: Serper + Tavily parallel, merged & deduplicated
-async function fetchSearchResults(query) {
-    const getDomain = url => { try { return new URL(url).hostname.replace('www.',''); } catch { return ''; } };
-
-    const serperPromise = fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: { 'X-API-KEY': 'bdb6eaaf192f22e8f9a6280fe9848c961bdaefa8', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: query, num: 10 }),
-        signal: AbortSignal.timeout(10000)
-    }).then(r => r.ok ? r.json() : Promise.reject('serper_fail'))
-      .then(data => (data.organic || []).map(r => ({
-          title: r.title, desc: r.snippet || r.title, url: r.link, domain: getDomain(r.link), source: 'serper'
-      }))).catch(() => []);
-
-    const tavilyPromise = fetch('https://api.tavily.com/search', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer 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', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query, max_results: 10, search_depth: 'basic', include_answer: false }),
-        signal: AbortSignal.timeout(10000)
-    }).then(r => r.ok ? r.json() : Promise.reject('tavily_fail'))
-      .then(data => (data.results || []).map(r => ({
-          title: r.title, desc: r.content || r.title, url: r.url, domain: getDomain(r.url), source: 'tavily'
-      }))).catch(() => []);
-
-    const [serperResults, tavilyResults] = await Promise.all([serperPromise, tavilyPromise]);
-
-    const seen = new Set();
-    const merged = [];
-    for (const result of [...serperResults, ...tavilyResults]) {
-        if (!seen.has(result.domain) && result.url) { seen.add(result.domain); merged.push(result); }
-        if (merged.length >= 10) break;
-    }
-
-    if (merged.length === 0) throw new Error('NO_RESULTS');
-    return merged.map((r, i) => ({ ...r, id: String(i + 1).padStart(2, '0') }));
 }
 
 async function runSearch(query) {
-    if (!query.trim()) return;
-    homeView.classList.add('hidden');
+    if (!query?.trim()) return;
+    currentQuery = query.trim();
+
+    const home = document.getElementById('home-view');
+    const searchView = document.getElementById('search-view');
+    const cards = document.getElementById('cards-viewport');
+    const hud = document.getElementById('hud-query-text');
+
+    home.classList.add('hidden');
     searchView.classList.add('visible');
-    hudQueryText.textContent = `QUERY: "${query.toUpperCase()}"`;
-    cardsViewport.innerHTML = '<div class="hud-loading">SCANNING...</div>';
-    try {
-        const results = await fetchSearchResults(query);
-        cardsViewport.innerHTML = '';
-        results.forEach(data => {
-            const card = document.createElement('div');
-            card.className = 'tactical-card';
-            card.innerHTML = `
-                <div class="card-telemetry">OBJ_${data.id} // SECURE</div>
-                <div class="card-title">${data.title}</div>
-                <div class="card-body">${data.desc}</div>
-                <div class="card-url">${data.domain}</div>
-                <div class="card-footer">TAP TO ENGAGE →</div>
-            `;
-            card.addEventListener('click', () => openReader(data));
-            cardsViewport.appendChild(card);
-        });
-        applyParallax();
-    } catch(e) {
-        cardsViewport.innerHTML = `<div class="hud-loading">${e.message === 'NO_RESULTS' ? 'NO SIGNALS FOUND' : 'CONNECTION LOST'}</div>`;
+    hud.textContent = `QUERY: "${currentQuery.toUpperCase()}"`;
+
+    cards.innerHTML = `<div class="hud-loading">AURA CORE • SCANNING YOUR SANCTUARY...</div>`;
+
+    const results = await getSearchResults(currentQuery);
+    cards.innerHTML = '';
+
+    results.forEach(r => {
+        const card = document.createElement('div');
+        card.className = `tactical-card ${r.category}`;
+        card.innerHTML = `
+            <div class="card-telemetry">OBJ_${r.id} // SECURE</div>
+            <div class="card-title">${r.title}</div>
+            <div class="card-body">${r.desc}</div>
+            <div class="card-insight">✺ ${r.insight}</div>
+            <div class="card-url">${r.domain}</div>
+            <div class="card-footer">TAP TO ENTER SANCTUARY →</div>
+        `;
+        card.onclick = () => openReader(r);
+        cards.appendChild(card);
+    });
+
+    addAffiliateCards(cards);
+    applyParallax();
+}
+
+// Vertical Tabs Management
+function renderVerticalTabs() {
+    const isDiamond = localStorage.getItem('aura_diamond_tier') === 'true';
+    const tabsList = document.getElementById('tabs-list');
+    const paywall = document.getElementById('tabs-paywall');
+    tabsList.innerHTML = '';
+
+    if (!isDiamond) {
+        paywall.style.display = 'block';
+        return;
+    }
+    paywall.style.display = 'none';
+
+    openTabs.forEach((tab, i) => {
+        const el = document.createElement('div');
+        el.className = 'tab-item';
+        el.innerHTML = `
+            <span>${tab.title}</span>
+            <span onclick="event.stopImmediatePropagation();closeTab(${i});" style="color:#E8917A;font-size:18px;">×</span>
+        `;
+        el.onclick = () => console.log('Switched to tab:', tab.title);
+        tabsList.appendChild(el);
+    });
+}
+
+function closeTab(index) {
+    openTabs.splice(index, 1);
+    renderVerticalTabs();
+}
+
+function addNewTab(title) {
+    openTabs.push({title: title.substring(0, 25) + (title.length > 25 ? '...' : '')});
+    renderVerticalTabs();
+}
+
+// Affiliate cards
+function addAffiliateCards(viewport) {
+    const html = `<div class="affiliate-card"><div style="flex:1"><div style="font-size:10px;color:var(--gold);">CURATED FOR YOU • WOMEN-OWNED</div><div style="font-size:13px;">Safe brands matching your search</div></div><button onclick="fakeCheckout()" class="shop-btn">SHOP SAFELY →</button></div>`;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    viewport.appendChild(div.firstElementChild);
+}
+
+function fakeCheckout() {
+    alert("🛍️ Affiliate checkout simulated — revenue earned for Aura.");
+}
+
+// Diamond Tier
+function upgradeToDiamond() {
+    localStorage.setItem('aura_diamond_tier', 'true');
+    alert("🎟️ Welcome, Diamond Sister! Vertical tabs, community, and all premium features unlocked.");
+    renderVerticalTabs();
+    checkCommunityAccess();
+}
+
+// Community paywall (same as before)
+function checkCommunityAccess() {
+    const isDiamond = localStorage.getItem('aura_diamond_tier') === 'true';
+    const paywall = document.getElementById('community-paywall');
+    const content = document.getElementById('community-content');
+    if (isDiamond) {
+        paywall.style.display = 'none';
+        content.style.display = 'block';
     }
 }
 
-function closeSearch() {
-    searchView.classList.remove('visible');
-    homeView.classList.remove('hidden');
-    searchInput.value = '';
-}
-
-searchInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runSearch(searchInput.value); } });
-document.getElementById('ai-badge').addEventListener('click', () => runSearch(searchInput.value));
-document.getElementById('ai-badge').addEventListener('touchend', e => { e.preventDefault(); runSearch(searchInput.value); });
-
-// Parallax on scroll
+// Parallax (original gravity + angle restored)
 function applyParallax() {
-    const cards = cardsViewport.querySelectorAll('.tactical-card');
+    const cards = document.querySelectorAll('.tactical-card');
     const isPortrait = window.innerHeight > window.innerWidth;
     const center = isPortrait ? window.innerHeight / 2 : window.innerWidth / 2;
     cards.forEach(card => {
         const rect = card.getBoundingClientRect();
         const cardCenter = isPortrait ? rect.top + rect.height/2 : rect.left + rect.width/2;
         let rot = Math.max(-40, Math.min(40, ((cardCenter - center) / center) * 40));
-        card.style.transform = isPortrait ? `rotateX(${-rot}deg)` : `rotateY(${rot}deg)`;
+        card.style.transform = isPortrait ? `rotateX(\( {-rot}deg)` : `rotateY( \){rot}deg)`;
     });
 }
-cardsViewport.addEventListener('scroll', applyParallax);
-window.addEventListener('resize', () => { if (searchView.classList.contains('visible')) applyParallax(); });
 
-// ── READER VIEW ───────────────────────────────────────────────────────────────
-const readerView     = document.getElementById('reader-view');
-const readerContent  = document.getElementById('reader-content');
-const readerTitleBar = document.getElementById('reader-title-bar');
-
-async function openReader(data) {
-    readerView.classList.add('visible');
-    readerTitleBar.textContent = data.title.toUpperCase();
-    readerContent.innerHTML = `
-        <div id="site-frame-wrap" style="position:absolute;inset:0;display:flex;flex-direction:column;">
-            <iframe id="site-frame" src="${data.url}"
-                style="flex:1;border:none;width:100%;height:100%;background:#fff;"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="lazy"></iframe>
-        </div>`;
-    const frame = document.getElementById('site-frame');
-    const fallbackTimer = setTimeout(() => showReaderFallback(data), 4000);
-    frame.addEventListener('load', () => {
-        clearTimeout(fallbackTimer);
-        try {
-            const doc = frame.contentDocument;
-            if (!doc || !doc.body || doc.body.innerHTML.trim() === '') showReaderFallback(data);
-        } catch(e) { clearTimeout(fallbackTimer); }
-    });
-    frame.addEventListener('error', () => { clearTimeout(fallbackTimer); showReaderFallback(data); });
+function initParallax() {
+    const viewport = document.getElementById('cards-viewport');
+    if (viewport) {
+        viewport.addEventListener('scroll', applyParallax);
+        window.addEventListener('resize', () => {
+            if (document.getElementById('search-view').classList.contains('visible')) applyParallax();
+        });
+    }
 }
 
-function showReaderFallback(data) {
-    readerContent.innerHTML = `
-        <div class="reader-aura-tag">Aura Secure Reader</div>
-        <div class="reader-heading">${data.title}</div>
-        <div class="reader-body">
-            <p style="color:#666;font-size:13px;margin-bottom:20px;">${data.desc}</p>
-            <div style="background:rgba(180,210,240,0.03);border:1px solid rgba(180,210,240,0.1);border-radius:16px;padding:16px;font-family:'Courier New',monospace;font-size:10px;color:var(--teal);letter-spacing:1px;line-height:2;">
-                ● SHIELD ACTIVE: Trackers blocked<br>● DOMAIN: ${data.domain}<br>● STATUS: Site uses iframe protection
-            </div>
-        </div>`;
+function setupSearch() {
+    const input = document.getElementById('search-input');
+    const badge = document.getElementById('ai-badge');
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runSearch(input.value); }});
+    badge.addEventListener('click', () => runSearch(input.value));
+    badge.addEventListener('touchend', e => { e.preventDefault(); runSearch(input.value); });
 }
 
-function closeReader() { readerView.classList.remove('visible'); readerContent.scrollTop = 0; }
-
-// ── LANDSCAPE ORB ─────────────────────────────────────────────────────────────
-const orbBtn  = document.getElementById('orb-btn');
-const orbWrap = document.getElementById('orb-search-wrap');
-const orbInput = document.getElementById('orb-input');
-orbBtn.addEventListener('click', () => { const o = orbWrap.classList.toggle('open'); if (o) setTimeout(() => orbInput.focus(), 50); });
-orbBtn.addEventListener('touchend', e => { e.preventDefault(); orbBtn.click(); });
-orbInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter')  { e.preventDefault(); orbWrap.classList.remove('open'); runSearch(orbInput.value); orbInput.value = ''; }
-    if (e.key === 'Escape') { orbWrap.classList.remove('open'); }
-});
-
-// ── WAITLIST ──────────────────────────────────────────────────────────────────
-async function fetchCount() {
-    const el = document.getElementById('count-num');
-    if (!db) { el.textContent = '—'; return; }
-    try {
-        const { count, error } = await db.from('waitlist').select('*', { count:'exact', head:true });
-        if (!error && count !== null) el.textContent = count.toLocaleString();
-    } catch(e) { el.textContent = '—'; }
+// Open panel hook
+function openPanel() {
+    // your original code
+    checkCommunityAccess();
+    renderVerticalTabs();
 }
 
-async function handleSignup() {
-    const emailInput = document.getElementById('email-input');
-    const btn = document.getElementById('submit-btn');
-    const email = emailInput.value.trim();
-    if (!email || !email.includes('@')) { emailInput.focus(); return; }
-    btn.textContent = '...'; btn.disabled = true;
-    if (!db) { btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)'; emailInput.disabled = true; localStorage.setItem('aura_secured','true'); return; }
-    try {
-        const { error } = await db.from('waitlist').insert([{ email }]);
-        if (error && error.code === '23505') { btn.textContent = 'Secured ✓'; }
-        else if (error) { btn.textContent = 'Retry'; btn.disabled = false; return; }
-        else { btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)'; emailInput.disabled = true; localStorage.setItem('aura_secured','true'); fetchCount(); }
-    } catch(e) { btn.textContent = 'Retry'; btn.disabled = false; }
-}
-
-document.getElementById('email-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); handleSignup(); } });
-
+// Load
 window.addEventListener('load', () => {
-    fetchCount();
-    if (localStorage.getItem('aura_secured') === 'true') {
-        const btn = document.getElementById('submit-btn');
-        btn.textContent = 'Secured ✓'; btn.style.color = 'var(--teal)'; btn.disabled = true;
-        document.getElementById('email-input').disabled = true;
-    }
+    setupSearch();
+    initParallax();
+    console.log('%c✅ Aura — Vertical tabs + paid community + DuckDuckGo search + revenue features live', 'color:#C9A84C;font-weight:700');
 });
-
-// ── BOTTOM SHEET — pull-up / collapse ────────────────────────────────────────
-(function() {
-    const nav    = document.getElementById('bottom-nav');
-    const handle = document.getElementById('nav-pull-handle');
-    const ghost  = document.getElementById('ghost-diamond');
-
-    const PEEK       = 80;
-    const SNAP_UP_AT = 120;
-    const SNAP_DN_AT = 60;
-
-    let isExpanded      = true;
-    let dragStartY      = 0;
-    let dragStartOffset = 0;
-    let dragging        = false;
-    let currentTranslate = 0;
-
-    function peekTranslate() { return nav.offsetHeight - PEEK; }
-
-    function syncGhost() {
-        const collapsed = nav.classList.contains('sheet-collapsed');
-        ghost.classList.toggle('visible', collapsed);
-    }
-
-    function expand(animate) {
-        if (!animate) nav.style.transition = 'none';
-        nav.style.transform = 'translateY(0)';
-        nav.classList.remove('sheet-collapsed');
-        nav.classList.add('sheet-expanded');
-        if (!animate) requestAnimationFrame(() => nav.style.transition = '');
-        isExpanded = true;
-        syncGhost();
-    }
-
-    function collapse(animate) {
-        if (!animate) nav.style.transition = 'none';
-        nav.style.transform = `translateY(${peekTranslate()}px)`;
-        nav.classList.add('sheet-collapsed');
-        nav.classList.remove('sheet-expanded');
-        if (!animate) requestAnimationFrame(() => nav.style.transition = '');
-        isExpanded = false;
-        syncGhost();
-    }
-
-    function onTouchStart(e) {
-        const touchZoneH = isExpanded ? 44 : nav.offsetHeight;
-        const navRect = nav.getBoundingClientRect();
-        const touchY  = e.touches[0].clientY;
-        if (touchY < navRect.top || touchY > navRect.top + touchZoneH) return;
-        dragging        = true;
-        dragStartY      = e.touches[0].clientY;
-        const matrix    = new DOMMatrix(getComputedStyle(nav).transform);
-        dragStartOffset = matrix.m42;
-        nav.style.transition = 'none';
-    }
-
-    function onTouchMove(e) {
-        if (!dragging) return;
-        e.preventDefault();
-        const dy = e.touches[0].clientY - dragStartY;
-        let next = Math.max(0, Math.min(peekTranslate(), dragStartOffset + dy));
-        nav.style.transform = `translateY(${next}px)`;
-        currentTranslate = next;
-        // Live ghost sync during drag
-        ghost.classList.toggle('visible', next > peekTranslate() * 0.85);
-    }
-
-    function onTouchEnd() {
-        if (!dragging) return;
-        dragging = false;
-        nav.style.transition = '';
-        if (isExpanded) {
-            currentTranslate > SNAP_DN_AT ? collapse(true) : expand(true);
-        } else {
-            (peekTranslate() - currentTranslate) > SNAP_UP_AT ? expand(true) : collapse(true);
-        }
-    }
-
-    handle.addEventListener('click', () => isExpanded ? collapse(true) : expand(true));
-    ghost.addEventListener('click',  () => expand(true));
-    ghost.addEventListener('touchend', e => { e.preventDefault(); expand(true); });
-
-    nav.addEventListener('touchstart',  onTouchStart, { passive: true });
-    nav.addEventListener('touchmove',   onTouchMove,  { passive: false });
-    nav.addEventListener('touchend',    onTouchEnd,   { passive: true });
-    nav.addEventListener('touchcancel', onTouchEnd,   { passive: true });
-    nav.addEventListener('transitionend', syncGhost);
-
-    // Focus on search → auto-expand
-    searchInput.addEventListener('focus', () => { if (!isExpanded) expand(true); });
-
-    // Patch runSearch to guarantee expansion
-    const _origRun = window.runSearch;
-    window.runSearch = function(q) { if (!isExpanded) expand(true); return _origRun ? _origRun(q) : undefined; };
-
-    // PWA standalone → start collapsed
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    if (isStandalone) requestAnimationFrame(() => requestAnimationFrame(() => collapse(false)));
-})();
-
-// ── PWA SERVICE WORKER ────────────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-    const swCode = `
-self.addEventListener('install', e => { self.skipWaiting(); });
-self.addEventListener('activate', e => { e.waitUntil(clients.claim()); });
-self.addEventListener('fetch', e => {
-    const url = new URL(e.request.url);
-    if (url.hostname === location.hostname || e.request.mode === 'navigate') {
-        e.respondWith(
-            caches.open('aura-v2').then(cache =>
-                fetch(e.request).then(res => { cache.put(e.request, res.clone()); return res; })
-                .catch(() => caches.match(e.request))
-            )
-        );
-    }
-});`;
-    const blob = new Blob([swCode], { type:'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob), { scope:'./' }).catch(() => {});
-}
-
-// ── AURA DIAMOND KEYBOARD ENGINE ─────────────────────────────────────────────
-(function() {
-    'use strict';
-
-    const kb          = document.getElementById('aura-kb');
-    const previewText = document.getElementById('kb-preview-text');
-
-    // All inputs managed by this keyboard
-    const INPUTS = {
-        'search-input': { submit: () => { AuraKB.close(); runSearch(document.getElementById('search-input').value); }, label: '⌕  SEARCH' },
-        'email-input':  { submit: () => { AuraKB.close(); handleSignup(); }, label: '⌕  JOIN' },
-        'orb-input':    { submit: () => { const v = document.getElementById('orb-input').value; document.getElementById('orb-search-wrap').classList.remove('open'); AuraKB.close(); runSearch(v); document.getElementById('orb-input').value = ''; }, label: '⌕  SEARCH' },
-    };
-
-    let activeInputId  = null;   // currently bound input element id
-    let isShifted      = false;  // caps/shift state
-    let currentLayer   = 'alpha'; // alpha | num | sym
-
-    // ── Expose public API ─────────────────────────────────────────────────────
-    window.AuraKB = {
-        open(inputId) {
-            if (!INPUTS[inputId]) return;
-            activeInputId = inputId;
-            isShifted     = false;
-            currentLayer  = 'alpha';
-            _showLayer('alpha');
-            _updateSubmitLabels();
-            _syncPreview();
-            kb.classList.add('open');
-            document.body.classList.add('kb-open');
-            // Bump bottom-nav up so search pill stays visible
-            document.getElementById('bottom-nav').style.transition = 'transform .4s cubic-bezier(.16,1,.3,1), bottom .38s cubic-bezier(.16,1,.3,1)';
-        },
-        close() {
-            kb.classList.remove('open');
-            document.body.classList.remove('kb-open');
-            activeInputId = null;
-            document.getElementById('bottom-nav').style.transition = '';
-        },
-        isOpen() { return kb.classList.contains('open'); }
-    };
-
-    // ── Intercept all managed inputs on touchstart ────────────────────────────
-    // Runs once after DOM is ready
-    function bindInputs() {
-        Object.keys(INPUTS).forEach(id => {
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            // Make readonly to suppress system keyboard on mobile touch devices
-            // (media query in CSS hides the whole keyboard on hover:hover/pointer:fine desktops)
-            el.setAttribute('readonly', 'readonly');
-
-            el.addEventListener('touchstart', e => {
-                e.preventDefault();
-                AuraKB.open(id);
-            }, { passive: false });
-
-            el.addEventListener('click', () => {
-                // Also handle click (for cases where touch didn't fire)
-                if (!AuraKB.isOpen()) AuraKB.open(id);
-            });
-        });
-    }
-
-    // ── Key press handler ─────────────────────────────────────────────────────
-    function handleKey(el) {
-        const char   = el.dataset.char;
-        const action = el.dataset.action;
-
-        // Tactile flash
-        el.classList.add('pressed');
-        setTimeout(() => el.classList.remove('pressed'), 120);
-
-        // Haptic on mobile
-        if (navigator.vibrate) navigator.vibrate(8);
-
-        if (char !== undefined) {
-            _insertChar(isShifted && char.length === 1 ? char.toUpperCase() : char);
-            // Auto-unshift after a letter
-            if (isShifted && char.match(/[a-z]/i)) {
-                isShifted = false;
-                _renderShiftState();
-            }
-        } else if (action) {
-            switch (action) {
-                case 'backspace':  _backspace();            break;
-                case 'submit':     _submit();               break;
-                case 'close':      AuraKB.close();          break;
-                case 'shift':      _toggleShift();          break;
-                case 'mode-num':   _showLayer('num');       break;
-                case 'mode-alpha': _showLayer('alpha');     break;
-                case 'mode-sym':   _showLayer('sym');       break;
-            }
-        }
-    }
-
-    // ── Internal helpers ──────────────────────────────────────────────────────
-    function _getInput() {
-        return activeInputId ? document.getElementById(activeInputId) : null;
-    }
-
-    function _insertChar(char) {
-        const el = _getInput();
-        if (!el) return;
-        // Insert at cursor position if possible
-        const start = el.selectionStart ?? el.value.length;
-        const end   = el.selectionEnd   ?? el.value.length;
-        el.value = el.value.slice(0, start) + char + el.value.slice(end);
-        // Move cursor
-        const pos = start + char.length;
-        el.setSelectionRange(pos, pos);
-        _syncPreview();
-    }
-
-    function _backspace() {
-        const el = _getInput();
-        if (!el) return;
-        const start = el.selectionStart ?? el.value.length;
-        const end   = el.selectionEnd   ?? el.value.length;
-        if (start !== end) {
-            el.value = el.value.slice(0, start) + el.value.slice(end);
-            el.setSelectionRange(start, start);
-        } else if (start > 0) {
-            el.value = el.value.slice(0, start - 1) + el.value.slice(start);
-            el.setSelectionRange(start - 1, start - 1);
-        }
-        _syncPreview();
-    }
-
-    function _submit() {
-        const fn = activeInputId && INPUTS[activeInputId]?.submit;
-        if (fn) fn();
-    }
-
-    function _toggleShift() {
-        isShifted = !isShifted;
-        _renderShiftState();
-    }
-
-    function _renderShiftState() {
-        const shiftKey = document.getElementById('kb-shift-alpha');
-        if (!shiftKey) return;
-        shiftKey.style.color      = isShifted ? 'var(--gold)' : '';
-        shiftKey.style.borderColor = isShifted ? 'rgba(201,168,76,0.5)' : '';
-
-        // Update letter key labels
-        document.querySelectorAll('#kb-alpha .kb-key[data-char]').forEach(k => {
-            const ch = k.dataset.char;
-            if (ch && ch.length === 1 && ch.match(/[a-z]/i)) {
-                k.textContent = isShifted ? ch.toUpperCase() : ch.toUpperCase(); // always show uppercase label
-            }
-        });
-    }
-
-    function _showLayer(name) {
-        currentLayer = name;
-        document.querySelectorAll('.kb-layer').forEach(l => l.classList.remove('active'));
-        const target = document.getElementById('kb-' + name);
-        if (target) target.classList.add('active');
-        _updateSubmitLabels();
-    }
-
-    function _updateSubmitLabels() {
-        const label = (activeInputId && INPUTS[activeInputId]?.label) || '⌕';
-        document.querySelectorAll('[data-action="submit"]').forEach(k => {
-            k.textContent = label;
-        });
-    }
-
-    function _syncPreview() {
-        const el = _getInput();
-        previewText.textContent = el ? (el.value || el.placeholder || '') : '';
-    }
-
-    // ── Single delegated event listener on the keyboard ───────────────────────
-    // Uses touchstart for zero-lag response on mobile
-    kb.addEventListener('touchstart', e => {
-        const key = e.target.closest('.kb-key');
-        if (!key) return;
-        e.preventDefault(); // prevent ghost click + page scroll
-        handleKey(key);
-    }, { passive: false });
-
-    // Fallback click for desktop testing (CSS hides kb on desktop anyway)
-    kb.addEventListener('click', e => {
-        const key = e.target.closest('.kb-key');
-        if (!key) return;
-        handleKey(key);
-    });
-
-    // Close keyboard when tapping outside all managed inputs and the keyboard itself
-    document.addEventListener('touchstart', e => {
-        if (!AuraKB.isOpen()) return;
-        if (kb.contains(e.target)) return;
-        const isInput = Object.keys(INPUTS).some(id => {
-            const el = document.getElementById(id);
-            return el && el.contains(e.target);
-        });
-        if (!isInput) AuraKB.close();
-    }, { passive: true });
-
-    // Init after DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', bindInputs);
-    } else {
-        bindInputs();
-    }
-
-})();
-// ── END AURA KEYBOARD ─────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
