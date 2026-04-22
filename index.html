@@ -332,6 +332,216 @@
         /* Return button — glass style */
         .btn-return { width:100%; padding:18px; background:var(--gold); color:#000; border:none; border-radius:18px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:800; letter-spacing:2px; text-transform:uppercase; cursor:pointer; margin-top:28px; transition:opacity .2s; box-shadow:0 4px 20px rgba(201,168,76,.25); }
         .btn-return:active { opacity:.8; }
+
+        /* ── AURA DIAMOND KEYBOARD ───────────────────────────────────────────── */
+        /* When keyboard is open, push bottom-nav up */
+        :root { --kb-h: 0px; }
+        body.kb-open { --kb-h: 310px; }
+
+        #aura-kb {
+            position: fixed;
+            bottom: calc(-320px - env(safe-area-inset-bottom));
+            left: 0; right: 0;
+            height: calc(310px + env(safe-area-inset-bottom));
+            z-index: 1500;
+            /* Deep glass — matches bottom-nav language */
+            background: linear-gradient(180deg, rgba(6,7,12,0.82) 0%, rgba(4,5,8,0.95) 100%);
+            backdrop-filter: blur(40px) saturate(200%);
+            -webkit-backdrop-filter: blur(40px) saturate(200%);
+            border-top: 1px solid rgba(255,255,255,0.10);
+            /* Gold inner top shine */
+            box-shadow:
+                inset 0 1px 0 rgba(201,168,76,0.18),
+                inset 1px 0 0 rgba(180,210,240,0.04),
+                inset -1px 0 0 rgba(180,210,240,0.04),
+                0 -12px 48px rgba(0,0,0,0.7);
+            border-radius: 24px 24px 0 0;
+            transition: bottom 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 10px 8px calc(8px + env(safe-area-inset-bottom));
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none; /* prevent scroll bleed */
+        }
+
+        #aura-kb.open {
+            bottom: 0;
+        }
+
+        /* Shimmer sweep — matches nav-shimmer */
+        #aura-kb::after {
+            content: '';
+            position: absolute; top: -40%; left: -60%;
+            width: 35%; height: 180%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.055), transparent);
+            transform: skewX(-18deg);
+            animation: nav-shimmer 8s ease-in-out infinite;
+            pointer-events: none; z-index: 0;
+        }
+
+        /* Query preview bar — shows what's being typed */
+        #kb-preview {
+            position: relative; z-index: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--hud-accent);
+            letter-spacing: 1px;
+            background: rgba(180,210,240,0.04);
+            border: 1px solid rgba(180,210,240,0.10);
+            border-radius: 10px;
+            padding: 6px 12px;
+            margin: 0 4px 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            text-shadow: 0 0 8px rgba(180,210,240,0.4);
+        }
+        #kb-preview .kb-cursor {
+            display: inline-block;
+            width: 2px; height: 14px;
+            background: var(--gold);
+            margin-left: 2px;
+            border-radius: 1px;
+            animation: kb-blink 1s step-end infinite;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+        @keyframes kb-blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+        /* Key rows */
+        .kb-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 5px;
+            position: relative; z-index: 1;
+            gap: 4px;
+        }
+
+        /* Base key — ice glass facet */
+        .kb-key {
+            flex: 1;
+            max-width: 42px;
+            height: 44px;
+            background: linear-gradient(160deg, rgba(180,210,240,0.07) 0%, rgba(10,12,20,0.6) 100%);
+            border: 0.5px solid rgba(180,210,240,0.15);
+            border-radius: 9px;
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.08s, background 0.08s, box-shadow 0.08s;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 6px rgba(0,0,0,0.4);
+            /* top edge highlight — diamond facet illusion */
+            position: relative;
+            overflow: hidden;
+        }
+        .kb-key::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+        }
+        .kb-key:active,
+        .kb-key.pressed {
+            transform: scale(0.90);
+            background: linear-gradient(160deg, rgba(201,168,76,0.22) 0%, rgba(180,210,240,0.08) 100%);
+            box-shadow: 0 0 14px rgba(201,168,76,0.35), inset 0 1px 0 rgba(255,255,255,0.12);
+            border-color: rgba(201,168,76,0.45);
+        }
+
+        /* Special keys — slightly larger, different tint */
+        .kb-key.special {
+            background: linear-gradient(160deg, rgba(201,168,76,0.09) 0%, rgba(10,12,20,0.7) 100%);
+            border-color: rgba(201,168,76,0.20);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: rgba(201,168,76,0.9);
+        }
+        .kb-key.special:active,
+        .kb-key.special.pressed {
+            background: linear-gradient(160deg, rgba(201,168,76,0.28) 0%, rgba(201,168,76,0.08) 100%);
+            color: var(--gold);
+        }
+
+        /* SEARCH / ENTER key — gold accent */
+        .kb-key.action {
+            background: linear-gradient(135deg, rgba(201,168,76,0.22) 0%, rgba(160,134,60,0.12) 100%);
+            border-color: rgba(201,168,76,0.40);
+            color: var(--gold);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            box-shadow: 0 0 12px rgba(201,168,76,0.15), inset 0 1px 0 rgba(201,168,76,0.2);
+        }
+        .kb-key.action:active {
+            background: linear-gradient(135deg, rgba(201,168,76,0.4) 0%, rgba(201,168,76,0.2) 100%);
+            box-shadow: 0 0 20px rgba(201,168,76,0.4);
+        }
+
+        /* CLOSE key — subtle berry */
+        .kb-key.close-key {
+            background: rgba(160,66,110,0.08);
+            border-color: rgba(160,66,110,0.20);
+            color: rgba(160,66,110,0.8);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .kb-key.close-key:active {
+            background: rgba(160,66,110,0.22);
+            color: var(--berry);
+        }
+
+        /* Wide keys */
+        .kb-key.w-space  { flex: 3; max-width: 160px; font-size: 10px; font-weight: 600; letter-spacing: 2px; color: rgba(200,232,248,0.5); }
+        .kb-key.w-back   { max-width: 54px; font-size: 17px; }
+        .kb-key.w-shift  { max-width: 54px; font-size: 12px; font-weight: 700; }
+        .kb-key.w-action { max-width: 70px; }
+        .kb-key.w-close  { max-width: 60px; }
+        .kb-key.w-clear  { max-width: 60px; }
+
+        /* Number row — monospace tint */
+        .kb-key.num {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--hud-accent2);
+        }
+
+        /* Symbol keys */
+        .kb-key.sym {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: rgba(180,210,240,0.7);
+            max-width: 38px;
+        }
+
+        /* MODE toggle (ABC / 123 / SYM) */
+        .kb-key.mode {
+            max-width: 52px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(160deg, rgba(78,173,160,0.10) 0%, rgba(10,12,20,0.7) 100%);
+            border-color: rgba(78,173,160,0.20);
+            color: rgba(78,173,160,0.9);
+        }
+        .kb-key.mode:active { background: rgba(78,173,160,0.22); }
+
+        /* Hidden keyboard layers */
+        .kb-layer { display: none; flex-direction: column; gap: 0; width: 100%; }
+        .kb-layer.active { display: flex; }
+
+        /* On real devices only — hide on non-touch to not break desktop */
+        @media (hover: hover) and (pointer: fine) {
+            #aura-kb { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -632,6 +842,155 @@
       <ellipse cx="22" cy="12" rx="4.5" ry="2" fill="white" fill-opacity="0.7" transform="rotate(-12,22,12)"/>
       <rect class="diamond-sweep" x="-8" y="0" width="14" height="58" fill="url(#gd-sw)" opacity="0.18" clip-path="url(#gd-clip)"/>
     </svg>
+</div>
+
+<!-- ── AURA DIAMOND KEYBOARD ──────────────────────────────────────────────── -->
+<div id="aura-kb" role="region" aria-label="Aura keyboard">
+
+    <!-- Live preview of current input value -->
+    <div id="kb-preview"><span id="kb-preview-text"></span><span class="kb-cursor"></span></div>
+
+    <!-- ── ALPHA LAYER (default) ─────────────────────────────────────────── -->
+    <div class="kb-layer active" id="kb-alpha">
+        <!-- Row 1: Q–P -->
+        <div class="kb-row">
+            <div class="kb-key" data-char="q">Q</div>
+            <div class="kb-key" data-char="w">W</div>
+            <div class="kb-key" data-char="e">E</div>
+            <div class="kb-key" data-char="r">R</div>
+            <div class="kb-key" data-char="t">T</div>
+            <div class="kb-key" data-char="y">Y</div>
+            <div class="kb-key" data-char="u">U</div>
+            <div class="kb-key" data-char="i">I</div>
+            <div class="kb-key" data-char="o">O</div>
+            <div class="kb-key" data-char="p">P</div>
+        </div>
+        <!-- Row 2: A–L -->
+        <div class="kb-row">
+            <div class="kb-key" data-char="a">A</div>
+            <div class="kb-key" data-char="s">S</div>
+            <div class="kb-key" data-char="d">D</div>
+            <div class="kb-key" data-char="f">F</div>
+            <div class="kb-key" data-char="g">G</div>
+            <div class="kb-key" data-char="h">H</div>
+            <div class="kb-key" data-char="j">J</div>
+            <div class="kb-key" data-char="k">K</div>
+            <div class="kb-key" data-char="l">L</div>
+        </div>
+        <!-- Row 3: Shift, Z–M, Backspace -->
+        <div class="kb-row">
+            <div class="kb-key special w-shift" id="kb-shift-alpha" data-action="shift">⇧</div>
+            <div class="kb-key" data-char="z">Z</div>
+            <div class="kb-key" data-char="x">X</div>
+            <div class="kb-key" data-char="c">C</div>
+            <div class="kb-key" data-char="v">V</div>
+            <div class="kb-key" data-char="b">B</div>
+            <div class="kb-key" data-char="n">N</div>
+            <div class="kb-key" data-char="m">M</div>
+            <div class="kb-key special w-back" data-action="backspace">⌫</div>
+        </div>
+        <!-- Row 4: Mode, Space, Search/Enter, Close -->
+        <div class="kb-row">
+            <div class="kb-key mode w-close" data-action="mode-num">123</div>
+            <div class="kb-key" data-char=".">.</div>
+            <div class="kb-key w-space" data-char=" ">SPACE</div>
+            <div class="kb-key" data-char=","> ,</div>
+            <div class="kb-key action w-action" data-action="submit" id="kb-submit-alpha">⌕</div>
+            <div class="kb-key close-key w-close" data-action="close">✕</div>
+        </div>
+    </div>
+
+    <!-- ── NUMERIC / SYMBOL LAYER ─────────────────────────────────────────── -->
+    <div class="kb-layer" id="kb-num">
+        <!-- Row 1: 1–0 -->
+        <div class="kb-row">
+            <div class="kb-key num" data-char="1">1</div>
+            <div class="kb-key num" data-char="2">2</div>
+            <div class="kb-key num" data-char="3">3</div>
+            <div class="kb-key num" data-char="4">4</div>
+            <div class="kb-key num" data-char="5">5</div>
+            <div class="kb-key num" data-char="6">6</div>
+            <div class="kb-key num" data-char="7">7</div>
+            <div class="kb-key num" data-char="8">8</div>
+            <div class="kb-key num" data-char="9">9</div>
+            <div class="kb-key num" data-char="0">0</div>
+        </div>
+        <!-- Row 2: Symbols row 1 -->
+        <div class="kb-row">
+            <div class="kb-key sym" data-char="-">-</div>
+            <div class="kb-key sym" data-char="/">/</div>
+            <div class="kb-key sym" data-char=":">:</div>
+            <div class="kb-key sym" data-char=";">;</div>
+            <div class="kb-key sym" data-char="("> ( </div>
+            <div class="kb-key sym" data-char=")"> ) </div>
+            <div class="kb-key sym" data-char="$">$</div>
+            <div class="kb-key sym" data-char="&">&</div>
+            <div class="kb-key sym" data-char="@">@</div>
+            <div class="kb-key sym" data-char='"'>"</div>
+        </div>
+        <!-- Row 3: Symbols row 2 -->
+        <div class="kb-row">
+            <div class="kb-key special w-close" data-action="mode-sym">#+=</div>
+            <div class="kb-key sym" data-char=".">.</div>
+            <div class="kb-key sym" data-char=",">,</div>
+            <div class="kb-key sym" data-char="?">?</div>
+            <div class="kb-key sym" data-char="!">!</div>
+            <div class="kb-key sym" data-char="'"> ' </div>
+            <div class="kb-key sym" data-char="_">_</div>
+            <div class="kb-key special w-back" data-action="backspace">⌫</div>
+        </div>
+        <!-- Row 4 -->
+        <div class="kb-row">
+            <div class="kb-key mode w-close" data-action="mode-alpha">ABC</div>
+            <div class="kb-key w-space" data-char=" ">SPACE</div>
+            <div class="kb-key action w-action" data-action="submit" id="kb-submit-num">⌕</div>
+            <div class="kb-key close-key w-close" data-action="close">✕</div>
+        </div>
+    </div>
+
+    <!-- ── EXTENDED SYMBOL LAYER ──────────────────────────────────────────── -->
+    <div class="kb-layer" id="kb-sym">
+        <div class="kb-row">
+            <div class="kb-key sym" data-char="[">[</div>
+            <div class="kb-key sym" data-char="]">]</div>
+            <div class="kb-key sym" data-char="{">{</div>
+            <div class="kb-key sym" data-char="}">}</div>
+            <div class="kb-key sym" data-char="#">#</div>
+            <div class="kb-key sym" data-char="%">%</div>
+            <div class="kb-key sym" data-char="^">^</div>
+            <div class="kb-key sym" data-char="*">*</div>
+            <div class="kb-key sym" data-char="+">+</div>
+            <div class="kb-key sym" data-char="="> = </div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key sym" data-char="~">~</div>
+            <div class="kb-key sym" data-char="`"> ` </div>
+            <div class="kb-key sym" data-char="|"> | </div>
+            <div class="kb-key sym" data-char="·"> · </div>
+            <div class="kb-key sym" data-char="√">√</div>
+            <div class="kb-key sym" data-char="π">π</div>
+            <div class="kb-key sym" data-char="÷">÷</div>
+            <div class="kb-key sym" data-char="×">×</div>
+            <div class="kb-key sym" data-char="€">€</div>
+            <div class="kb-key sym" data-char="£">£</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key sym" data-char="<">&lt;</div>
+            <div class="kb-key sym" data-char=">">&gt;</div>
+            <div class="kb-key sym" data-char="…">…</div>
+            <div class="kb-key sym" data-char="—">—</div>
+            <div class="kb-key sym" data-char="•">•</div>
+            <div class="kb-key sym" data-char="\"> \ </div>
+            <div class="kb-key special w-back" data-action="backspace">⌫</div>
+        </div>
+        <div class="kb-row">
+            <div class="kb-key mode w-close" data-action="mode-num">123</div>
+            <div class="kb-key w-space" data-char=" ">SPACE</div>
+            <div class="kb-key action w-action" data-action="submit">⌕</div>
+            <div class="kb-key close-key w-close" data-action="close">✕</div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -986,6 +1345,218 @@ self.addEventListener('fetch', e => {
     const blob = new Blob([swCode], { type:'application/javascript' });
     navigator.serviceWorker.register(URL.createObjectURL(blob), { scope:'./' }).catch(() => {});
 }
+
+// ── AURA DIAMOND KEYBOARD ENGINE ─────────────────────────────────────────────
+(function() {
+    'use strict';
+
+    const kb          = document.getElementById('aura-kb');
+    const previewText = document.getElementById('kb-preview-text');
+
+    // All inputs managed by this keyboard
+    const INPUTS = {
+        'search-input': { submit: () => { AuraKB.close(); runSearch(document.getElementById('search-input').value); }, label: '⌕  SEARCH' },
+        'email-input':  { submit: () => { AuraKB.close(); handleSignup(); }, label: '⌕  JOIN' },
+        'orb-input':    { submit: () => { const v = document.getElementById('orb-input').value; document.getElementById('orb-search-wrap').classList.remove('open'); AuraKB.close(); runSearch(v); document.getElementById('orb-input').value = ''; }, label: '⌕  SEARCH' },
+    };
+
+    let activeInputId  = null;   // currently bound input element id
+    let isShifted      = false;  // caps/shift state
+    let currentLayer   = 'alpha'; // alpha | num | sym
+
+    // ── Expose public API ─────────────────────────────────────────────────────
+    window.AuraKB = {
+        open(inputId) {
+            if (!INPUTS[inputId]) return;
+            activeInputId = inputId;
+            isShifted     = false;
+            currentLayer  = 'alpha';
+            _showLayer('alpha');
+            _updateSubmitLabels();
+            _syncPreview();
+            kb.classList.add('open');
+            document.body.classList.add('kb-open');
+            // Bump bottom-nav up so search pill stays visible
+            document.getElementById('bottom-nav').style.transition = 'transform .4s cubic-bezier(.16,1,.3,1), bottom .38s cubic-bezier(.16,1,.3,1)';
+        },
+        close() {
+            kb.classList.remove('open');
+            document.body.classList.remove('kb-open');
+            activeInputId = null;
+            document.getElementById('bottom-nav').style.transition = '';
+        },
+        isOpen() { return kb.classList.contains('open'); }
+    };
+
+    // ── Intercept all managed inputs on touchstart ────────────────────────────
+    // Runs once after DOM is ready
+    function bindInputs() {
+        Object.keys(INPUTS).forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            // Make readonly to suppress system keyboard on mobile touch devices
+            // (media query in CSS hides the whole keyboard on hover:hover/pointer:fine desktops)
+            el.setAttribute('readonly', 'readonly');
+
+            el.addEventListener('touchstart', e => {
+                e.preventDefault();
+                AuraKB.open(id);
+            }, { passive: false });
+
+            el.addEventListener('click', () => {
+                // Also handle click (for cases where touch didn't fire)
+                if (!AuraKB.isOpen()) AuraKB.open(id);
+            });
+        });
+    }
+
+    // ── Key press handler ─────────────────────────────────────────────────────
+    function handleKey(el) {
+        const char   = el.dataset.char;
+        const action = el.dataset.action;
+
+        // Tactile flash
+        el.classList.add('pressed');
+        setTimeout(() => el.classList.remove('pressed'), 120);
+
+        // Haptic on mobile
+        if (navigator.vibrate) navigator.vibrate(8);
+
+        if (char !== undefined) {
+            _insertChar(isShifted && char.length === 1 ? char.toUpperCase() : char);
+            // Auto-unshift after a letter
+            if (isShifted && char.match(/[a-z]/i)) {
+                isShifted = false;
+                _renderShiftState();
+            }
+        } else if (action) {
+            switch (action) {
+                case 'backspace':  _backspace();            break;
+                case 'submit':     _submit();               break;
+                case 'close':      AuraKB.close();          break;
+                case 'shift':      _toggleShift();          break;
+                case 'mode-num':   _showLayer('num');       break;
+                case 'mode-alpha': _showLayer('alpha');     break;
+                case 'mode-sym':   _showLayer('sym');       break;
+            }
+        }
+    }
+
+    // ── Internal helpers ──────────────────────────────────────────────────────
+    function _getInput() {
+        return activeInputId ? document.getElementById(activeInputId) : null;
+    }
+
+    function _insertChar(char) {
+        const el = _getInput();
+        if (!el) return;
+        // Insert at cursor position if possible
+        const start = el.selectionStart ?? el.value.length;
+        const end   = el.selectionEnd   ?? el.value.length;
+        el.value = el.value.slice(0, start) + char + el.value.slice(end);
+        // Move cursor
+        const pos = start + char.length;
+        el.setSelectionRange(pos, pos);
+        _syncPreview();
+    }
+
+    function _backspace() {
+        const el = _getInput();
+        if (!el) return;
+        const start = el.selectionStart ?? el.value.length;
+        const end   = el.selectionEnd   ?? el.value.length;
+        if (start !== end) {
+            el.value = el.value.slice(0, start) + el.value.slice(end);
+            el.setSelectionRange(start, start);
+        } else if (start > 0) {
+            el.value = el.value.slice(0, start - 1) + el.value.slice(start);
+            el.setSelectionRange(start - 1, start - 1);
+        }
+        _syncPreview();
+    }
+
+    function _submit() {
+        const fn = activeInputId && INPUTS[activeInputId]?.submit;
+        if (fn) fn();
+    }
+
+    function _toggleShift() {
+        isShifted = !isShifted;
+        _renderShiftState();
+    }
+
+    function _renderShiftState() {
+        const shiftKey = document.getElementById('kb-shift-alpha');
+        if (!shiftKey) return;
+        shiftKey.style.color      = isShifted ? 'var(--gold)' : '';
+        shiftKey.style.borderColor = isShifted ? 'rgba(201,168,76,0.5)' : '';
+
+        // Update letter key labels
+        document.querySelectorAll('#kb-alpha .kb-key[data-char]').forEach(k => {
+            const ch = k.dataset.char;
+            if (ch && ch.length === 1 && ch.match(/[a-z]/i)) {
+                k.textContent = isShifted ? ch.toUpperCase() : ch.toUpperCase(); // always show uppercase label
+            }
+        });
+    }
+
+    function _showLayer(name) {
+        currentLayer = name;
+        document.querySelectorAll('.kb-layer').forEach(l => l.classList.remove('active'));
+        const target = document.getElementById('kb-' + name);
+        if (target) target.classList.add('active');
+        _updateSubmitLabels();
+    }
+
+    function _updateSubmitLabels() {
+        const label = (activeInputId && INPUTS[activeInputId]?.label) || '⌕';
+        document.querySelectorAll('[data-action="submit"]').forEach(k => {
+            k.textContent = label;
+        });
+    }
+
+    function _syncPreview() {
+        const el = _getInput();
+        previewText.textContent = el ? (el.value || el.placeholder || '') : '';
+    }
+
+    // ── Single delegated event listener on the keyboard ───────────────────────
+    // Uses touchstart for zero-lag response on mobile
+    kb.addEventListener('touchstart', e => {
+        const key = e.target.closest('.kb-key');
+        if (!key) return;
+        e.preventDefault(); // prevent ghost click + page scroll
+        handleKey(key);
+    }, { passive: false });
+
+    // Fallback click for desktop testing (CSS hides kb on desktop anyway)
+    kb.addEventListener('click', e => {
+        const key = e.target.closest('.kb-key');
+        if (!key) return;
+        handleKey(key);
+    });
+
+    // Close keyboard when tapping outside all managed inputs and the keyboard itself
+    document.addEventListener('touchstart', e => {
+        if (!AuraKB.isOpen()) return;
+        if (kb.contains(e.target)) return;
+        const isInput = Object.keys(INPUTS).some(id => {
+            const el = document.getElementById(id);
+            return el && el.contains(e.target);
+        });
+        if (!isInput) AuraKB.close();
+    }, { passive: true });
+
+    // Init after DOM ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindInputs);
+    } else {
+        bindInputs();
+    }
+
+})();
+// ── END AURA KEYBOARD ─────────────────────────────────────────────────────────
 </script>
 </body>
 </html>
