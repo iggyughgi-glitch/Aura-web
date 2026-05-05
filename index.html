@@ -1,548 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Playables SDK -->
-<script>// Playables SDK v1.0.0
-// Game lifecycle bridge: rAF-based game-ready detection + event communication
-(function() {
-  'use strict';
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Aura — The Sanctuary</title>
+    <meta name="description" content="The world's first AI-powered web browser built for women.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --black:#040406; --surface:rgba(10,10,16,0.98); --border:rgba(255,255,0.07);
+            --gold:#C9A84C; --teal:#4EADA0; --berry:#A0426E; --fashion:#B87ED4; --health:#E8917A;
+            --white:#FDFCFA; --muted:#7A7A82; --nav-h:130px;
+            --hud-bg:#050507; --hud-accent:#00F0FF; --hud-grid:rgba(0,240,255,0.05);
+        }
+        *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+        html,body{height:100%;overflow:hidden;background:#050507;color:#0D0D;font-family:'DM Sans',sans-serif;}
 
-  // Idempotency: skip if already initialized (e.g., server-side injection
-  // followed by client-side inject-javascript via the Bloks webview component).
-  if (window.playablesSDK) return;
+        #home-view{height:calc(100vh - var(--nav-h));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 32px;transition:filter.5s ease,opacity.4s ease;background:#FAFAF8;}
+        #home-view.blurred{filter:blur(8px) brightness(.85);pointer-events:none;}
+        #home-view.hidden{opacity:0;pointer-events:none;}
+       .brand-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
+       .brand-diamond{animation:diamond-pulse 3s ease-in-out infinite;flex-shrink:0;margin-top:6px;}
+       .brand{font-family:'Playfair Display',serif;font-size:clamp(62px,18vw,88px);font-weight:900;letter-spacing:-3px;line-height:1;color:#0A0A0A;}
+       .tagline{font-size:13px;color:#888;font-weight:400;letter-spacing:2px;text-transform:uppercase;}
+       .waitlist{margin-top:32px;width:100%;max-width:300px;}
+       .waitlist-label{font-size:10px;text-transform:uppercase;letter-spacing:4px;font-weight:700;color:#333;margin-bottom:8px;}
+       .waitlist-desc{font-size:12px;color:#888;line-height:1.6;margin-bottom:20px;}
+       .input-row{display:flex;align-items:center;border-bottom:1.5px solid #D0D0;padding-bottom:10px;transition:border-color.3s;}
+       .input-row:focus-within{border-color:#0A;}
+       .email-input{flex:1;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:#0A0A;background:transparent;}
+       .email-input::placeholder{color:#BBB;}
+       .btn-submit{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#0A0A;cursor:pointer;padding:0;transition:color.3s,opacity.3s;white-space:nowrap;}
+       .btn-submit:disabled{opacity:.4;cursor:default;}
+       .live-count{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:8px;}
+       .count-dot{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
+       .count-num{font-size:12px;font-weight:700;color:var(--teal);font-variant-numeric:tabular-nums;}
+       .count-label{font-size:10px;color:#AAA;text-transform:uppercase;letter-spacing:2px;}
 
-  var HANDLER_NAME = 'playablesGameEventHandler';
-  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
-  var RAF_FRAME_THRESHOLD = 3;
+       .app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px;max-width:280px;margin-left:auto;margin-right:auto}
+       .app-node{display:flex;flex-direction:column;align-items:center;gap:6px;text-decoration:none;cursor:pointer}
+       .app-icon{width:48px;height:48px;background:linear-gradient(160deg,rgba(0,240,255,.1),rgba(10,12,20,.7));border:1px solid rgba(0,240,255,.25);border-radius:14px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);transition:transform.12s}
+       .app-icon svg{width:20px;height:20px;stroke:#00F0FF;stroke-width:1.8}
+       .app-node:active.app-icon{transform:scale(.92)}
+       .app-label{font-size:8px;color:#999;letter-spacing:1.2px;text-transform:uppercase;font-weight:700}
 
-  var gameReadySent = false;
-  var firstInteractionSent = false;
-  var errorSent = false;
-  var frameCount = 0;
-  var originalRAF = window.requestAnimationFrame;
+        #reader-view{position:fixed;top:0;left:0;right:0;bottom:0;z-index:600;opacity:0;pointer-events:none;transition:opacity.35s ease;display:flex;flex-direction:column;background:var(--hud-bg);}
+        #reader-view.visible{opacity:1;pointer-events:all;}
+       .reader-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.75);backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
+       .reader-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;transition:background.2s;}
+       .reader-title-bar{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:1.5px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);}
+       .reader-content{flex:1;overflow-y:auto;position:relative;-webkit-overflow-scrolling:touch;padding-bottom:20px;}
+       .reader-content::-webkit-scrollbar{display:none;}
 
-  // --- Transport Layer ---
+        #search-view{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--hud-bg);background-image:linear-gradient(var(--hud-grid) 1px,transparent 1px),linear-gradient(90deg,var(--hud-grid) 1px,transparent 1px);background-size:40px 40px;z-index:500;opacity:0;pointer-events:none;transition:opacity.35s ease;display:flex;flex-direction:column;}
+        #search-view.visible{opacity:1;pointer-events:all;}
+       .hud-bar{display:flex;align-items:center;gap:12px;flex-shrink:0;overflow:hidden;position:relative;background:rgba(8,8,14,.75);backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(0,240,255,.12);box-shadow:inset 0 -1px 0 rgba(0,240,255,.06),inset 0 1px 0 rgba(255,255,255,.05),0 8px 32px rgba(0,0,0,.5);padding:calc(env(safe-area-inset-top) + 14px) 16px 14px;}
+       .hud-back{width:34px;height:34px;background:rgba(0,240,255,.06);border:1px solid rgba(0,240,255,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--hud-accent);font-size:15px;flex-shrink:0;}
+       .hud-query-display{flex:1;font-family:'Courier New',monospace;font-size:11px;color:var(--hud-accent);letter-spacing:2px;opacity:.85;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;background:rgba(0,240,255,.04);border:1px solid rgba(0,240,255,.1);border-radius:14px;padding:6px 14px;text-shadow:0 0 8px rgba(0,240,255,.4);}
 
-  function hasIOSBridge() {
-    return !!(window.webkit &&
-              window.webkit.messageHandlers &&
-              window.webkit.messageHandlers[HANDLER_NAME]);
-  }
+       .cards-viewport{flex:1;display:flex;perspective:1200px;padding:20px;gap:24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:160px;}
+       .cards-viewport::-webkit-scrollbar{display:none;}
+        @media(orientation:portrait){.cards-viewport{flex-direction:column;overflow-y:auto;overflow-x:hidden;align-items:center;}}
+        @media(orientation:landscape){.cards-viewport{flex-direction:row;overflow-x:auto;overflow-y:hidden;align-items:center;}}
+       .tactical-card{flex:0 0 auto;width:min(300px,88vw);min-height:230px;background:rgba(5,5,7,0.7);border:1px solid rgba(0,240,255,.18);box-shadow:0 25px 70px rgba(0,0,0,.5),inset 0 0 40px rgba(0,240,255,.03);display:flex;flex-direction:column;justify-content:space-between;padding:24px;position:relative;transform-style:preserve-3d;transition:transform.18s ease-out;cursor:pointer;border-radius:6px;backdrop-filter:blur(12px);}
+       .tactical-card::before,.tactical-card::after{content:'';position:absolute;width:16px;height:16px;}
+       .tactical-card::before{top:-1px;left:-1px;border-top:2px solid var(--hud-accent);border-left:2px solid var(--hud-accent);filter:drop-shadow(0 0 4px var(--hud-accent));}
+       .tactical-card::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--hud-accent);border-right:2px solid var(--hud-accent);filter:drop-shadow(0 0 4px var(--hud-accent));}
+       .tactical-card:active{transform:scale(.97)!important;}
+       .card-telemetry{font-family:'Courier New',monospace;font-size:10px;color:var(--hud-accent);letter-spacing:1px;text-shadow:0 0 6px rgba(0,240,255,.5);}
+       .card-title{font-weight:800;font-size:19px;color:#FFF;margin:10px 0;line-height:1.25;text-shadow:0 0 20px rgba(0,240,255,.15);}
+       .card-body{font-size:13px;color:#AAA;line-height:1.6;flex:1;margin:6px 0;}
+       .card-url{font-size:10px;color:rgba(0,240,255,.6);font-family:'Courier New',monospace;letter-spacing:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+       .card-footer{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1.5px;margin-top:10px;}
+       .hud-loading{margin:auto;font-family:'Courier New',monospace;font-size:13px;color:var(--hud-accent);letter-spacing:3px;animation:blink 1s step-end infinite;}
 
-  function hasAndroidBridge() {
-    return !!(window[ANDROID_BRIDGE_NAME] &&
-              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
-  }
+        #bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);border-radius:28px 28px 0 0;padding:16px 20px calc(16px + env(safe-area-inset-bottom));z-index:600;display:flex;flex-direction:column;gap:12px;overflow:hidden;background:rgba(5,5,7,0.92);backdrop-filter:blur(32px) saturate(180%);box-shadow:inset 0 1px 0 rgba(255,255,.12),0 -8px 40px rgba(0,0,0,.8);border-top:1px solid rgba(255,255,255,.08);transition:transform.35s cubic-bezier(.16,1,.3,1);}
+       .tabs{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;}
+       .tabs::-webkit-scrollbar{display:none;}
+       .tab{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;cursor:pointer;transition:color.2s;}
+       .tab.active{color:#FFF;text-shadow:0 0 12px rgba(255,255,.4);}
+       .search-row{display:flex;align-items:center;gap:12px;}
+       .search-bar{flex:1;background:rgba(13,17,23,.75);backdrop-filter:blur(15px);border:1px solid rgba(0,240,255,.3);border-radius:18px;padding:0 14px;height:42px;display:flex;align-items:center;gap:8px;box-shadow:inset 0 0 12px rgba(0,240,255,.05),0 4px 20px rgba(0,0,0,.5);position:relative;overflow:hidden;}
+       .search-bar::before{content:'';position:absolute;top:0;left:-80%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,240,255,.1),transparent);animation:pill-shimmer 5s ease-in-out infinite;}
+        @keyframes pill-shimmer{0%,100%{left:-80%}60%{left:120%}}
+        #search-input{flex:1;background:transparent;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:13px;color:#DDD;}
+        #search-input::placeholder{color:rgba(0,240,255,.45);font-family:'Courier New',monospace;letter-spacing:1px;}
+       .ai-badge{font-size:9px;font-weight:800;color:var(--hud-accent);letter-spacing:1px;white-space:nowrap;text-shadow:0 0 8px var(--hud-accent);cursor:pointer;}
 
-  function isInIframe() {
-    return !!(window.parent && window.parent !== window);
-  }
+        @keyframes diamond-pulse{0%,100%{filter:drop-shadow(0 0 5px rgba(0,240,255,.5)) drop-shadow(0 2px rgba(255,255,255,.3))}50%{filter:drop-shadow(0 0 12px rgba(0,240,255,.9)) drop-shadow(0 0 4px rgba(255,255,255,.5))}}
+       .cut-diamond{animation:diamond-pulse 3s ease-in-out infinite;pointer-events:none;}
+       .diamond-btn{width:54px;height:54px;background:rgba(0,240,255,.08);border:1px solid rgba(0,240,255,.3);border-radius:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform.15s;flex-shrink:0;box-shadow:inset 0 0 12px rgba(0,240,255,.1),0 4px 18px rgba(0,0,0,.5);}
+       .diamond-btn:active{transform:scale(.88);}
 
-  function sendEvent(eventName, payload) {
-    var message = {
-      type: eventName,
-      payload: payload || {},
-      timestamp: Date.now()
-    };
+        #nav-pullup{position:fixed;bottom:0;left:0;right:0;height:24px;z-index:599;pointer-events:none;opacity:0;transition:opacity.3s;}
 
-    if (hasIOSBridge()) {
-      try {
-        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
-      } catch (e) { /* ignore */ }
-      return;
-    }
-
-    if (hasAndroidBridge()) {
-    try {
-      var p = payload || {};
-      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
-      p.timestamp = message.timestamp;
-      window[ANDROID_BRIDGE_NAME].postEvent(
-        eventName,
-        JSON.stringify(p)
-      );
-    } catch (e) { /* ignore */ }
-    return;
-  }
-
-    if (isInIframe()) {
-      try {
-        window.parent.postMessage(message, '*');
-      } catch (e) { /* ignore */ }
-      return;
-    }
-  }
-
-  // --- rAF Game-Ready Detection ---
-
-  function onFrame() {
-    if (gameReadySent) return;
-
-    frameCount++;
-    if (frameCount >= RAF_FRAME_THRESHOLD) {
-      gameReadySent = true;
-      sendEvent('game_ready', {
-        frame_count: frameCount,
-        detected_at: Date.now()
-      });
-      return;
-    }
-
-    originalRAF.call(window, onFrame);
-  }
-
-  if (originalRAF) {
-    window.requestAnimationFrame = function(callback) {
-      if (!gameReadySent) {
-        return originalRAF.call(window, function(timestamp) {
-          frameCount++;
-          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
-            gameReadySent = true;
-            sendEvent('game_ready', {
-              frame_count: frameCount,
-              detected_at: Date.now()
-            });
-          }
-          callback(timestamp);
-        });
-      }
-      return originalRAF.call(window, callback);
-    };
-  }
-
-  // --- First User Interaction Detection ---
-
-  function setupFirstInteractionDetection() {
-    var events = ['touchstart', 'mousedown', 'keydown'];
-
-    function onFirstInteraction() {
-      if (firstInteractionSent) return;
-      firstInteractionSent = true;
-      sendEvent('user_interaction_start', null);
-
-      for (var i = 0; i < events.length; i++) {
-        document.removeEventListener(events[i], onFirstInteraction, true);
-      }
-    }
-
-    for (var i = 0; i < events.length; i++) {
-      document.addEventListener(events[i], onFirstInteraction, true);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
-  } else {
-    setupFirstInteractionDetection();
-  }
-
-  // --- Auto Error Capture ---
-
-  window.addEventListener('error', function(event) {
-    if (errorSent) return;
-    errorSent = true;
-    sendEvent('error', {
-      message: event.message || 'Unknown error',
-      source: event.filename || '',
-      lineno: event.lineno || 0,
-      colno: event.colno || 0,
-      auto_captured: true
-    });
-  });
-
-  window.addEventListener('unhandledrejection', function(event) {
-    if (errorSent) return;
-    errorSent = true;
-    var reason = event.reason;
-    sendEvent('error', {
-      message: (reason instanceof Error) ? reason.message : String(reason),
-      type: 'unhandled_promise_rejection',
-      auto_captured: true
-    });
-  });
-
-  // --- Public API ---
-
-  window.playablesSDK = {
-    complete: function(score) {
-      sendEvent('game_ended', {
-        score: score,
-        completed: true
-      });
-    },
-
-    error: function(message) {
-      if (errorSent) return;
-      errorSent = true;
-      sendEvent('error', {
-        message: message || 'Unknown error',
-        auto_captured: false
-      });
-    },
-
-    sendEvent: function(eventName, payload) {
-      if (!eventName || typeof eventName !== 'string') return;
-      sendEvent(eventName, payload);
-    }
-  };
-
-  // Kick off rAF detection in case no game code calls rAF immediately
-  if (originalRAF) {
-    originalRAF.call(window, onFrame);
-  }
-})();</script>
-<script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>SAPPHIRE — Private Search</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
-<style>
-:root{
-  --teal:#00F0FF;
-  --teal-2:#00D4E0;
-  --bg:#020308;
-  --ink:#E6FDFF;
-  --muted:#8BA3AD;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;background:var(--bg);color:var(--ink);font-family:"Instrument Sans",system-ui,-apple-system,BlinkMacSystemFont,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-body{display:flex;justify-content:center}
-.bg{position:fixed;inset:0;z-index:0;background:
-  radial-gradient(800px 600px at 50% -10%,rgba(0,240,255,.18),transparent 60%),
-  radial-gradient(600px 400px at 80% 20%,rgba(0,212,224,.12),transparent 60%),
-  radial-gradient(500px 500px at 20% 80%,rgba(0,240,255,.08),transparent 60%),
-  #020308}
-.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:44px 44px;opacity:.5}
-
-main{position:relative;z-index:2;width:100%;max-width:420px;min-height:100dvh;padding:env(safe-area-inset-top) 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
-
-.view{display:none;flex-direction:column;min-height:80vh}
-.view.active{display:flex;animation:viewIn .4s cubic-bezier(.2,.8,.2,1)}
-@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-#home-view{align-items:center;justify-content:center;text-align:center;padding-top:8vh}
-
-.hero{position:relative;width:140px;height:168px;display:grid;place-items:center;margin-bottom:18px}
-.diamond-halo{position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(0,240,255,.22) 0%,rgba(0,240,255,.08) 40%,transparent 70%);filter:blur(18px);animation:halo 4s ease-in-out infinite}
-@keyframes halo{0%,100%{transform:scale(.96);opacity:.8}50%{transform:scale(1.06);opacity:1}}
-
-.diamond-svg{width:112px;height:136px;filter:drop-shadow(0 0 28px rgba(0,240,255,.4)) drop-shadow(0 0 60px rgba(0,240,255,.18));transform-origin:50% 42%;animation:float 6s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0) rotateX(0)}50%{transform:translateY(-6px) rotateX(4deg)}}
-
-.wordmark{font-size:26px;letter-spacing:.42em;font-weight:600;margin:8px 0 6px;color:#cfffff;text-shadow:0 0 22px rgba(0,240,255,.35)}
-.tag{font-family:"Fragment Mono",monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-
-.search-wrap{position:relative;width:100%;max-width:360px;margin:34px auto 0}
-.search-bar{display:flex;align-items:center;gap:10px;height:54px;padding:0 18px 0 20px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));border:1px solid rgba(0,240,255,.22);border-radius:999px;backdrop-filter:blur(16px) saturate(140%);box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 28px rgba(0,0,0,.45),0 0 0 rgba(0,240,255,0);transition:.25s}
-.search-bar:focus-within{border-color:rgba(0,240,255,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 34px rgba(0,0,0,.55),0 0 32px rgba(0,240,255,.18)}
-.search-bar svg{width:18px;height:18px;stroke:var(--teal);opacity:.9;flex-shrink:0}
-.search-bar input{flex:1;background:transparent;border:none;outline:none;color:var(--ink);font-size:16px;font-weight:450;letter-spacing:.01em}
-.search-bar input::placeholder{color:#6f8791}
-.search-go{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at 30% 20%,var(--teal),var(--teal-2));box-shadow:0 0 16px rgba(0,240,255,.45),inset 0 1px 1px rgba(255,255,255,.4);display:grid;place-items:center;transition:.15s}
-.search-go:active{transform:scale(.94)}
-.search-go svg{width:16px;height:16px;stroke:#002a30;stroke-width:2.5}
-
-.live-count{margin-top:14px;font-family:"Fragment Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#7eeef5;display:flex;align-items:center;gap:8px;justify-content:center;opacity:.9}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 10px var(--teal);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
-
-.foot{margin-top:auto;padding-top:32px;text-align:center;font-family:"Fragment Mono",monospace;font-size:10px;letter-spacing:.12em;color:#5b6e77;opacity:.75}
-
-/* Results */
-#results-view{padding-top:24px}
-.results-head{display:flex;align-items:center;gap:12px;margin-bottom:18px}
-.back-btn{width:36px;height:36px;border-radius:12px;border:1px solid rgba(0,240,255,.2);background:rgba(255,255,255,.03);display:grid;place-items:center;cursor:pointer;color:var(--teal)}
-.results-title{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-family:"Fragment Mono"}
-
-.results-list{display:flex;flex-direction:column;gap:12px}
-.res-card{position:relative;padding:16px 16px 16px 54px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid rgba(0,240,255,.14);border-radius:18px;cursor:pointer;transition:.18s;overflow:hidden}
-.res-card:hover{border-color:rgba(0,240,255,.34);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 20px rgba(0,240,255,.08)}
-.res-id{position:absolute;left:14px;top:16px;width:28px;height:28px;display:grid;place-items:center;font-family:"Fragment Mono";font-size:11px;color:var(--teal);background:rgba(0,240,255,.08);border:1px solid rgba(0,240,255,.22);border-radius:9px}
-.res-card h3{font-size:16px;font-weight:600;line-height:1.3;margin-bottom:6px;padding-right:10px}
-.res-card p{font-size:13.5px;line-height:1.45;color:#b7c9cf;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.res-domain{margin-top:8px;font-family:"Fragment Mono";font-size:10.5px;letter-spacing:.08em;color:#7ab8c0;text-transform:lowercase}
-
-/* Reader */
-#reader-view{padding-top:20px}
-.reader-head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.reader-title{font-size:18px;font-weight:600;line-height:1.25;flex:1}
-.reader-meta{font-family:"Fragment Mono";font-size:11px;color:var(--muted);margin:6px 0 18px}
-.reader-actions{display:flex;gap:10px;margin-bottom:20px}
-.pill{padding:9px 14px;border-radius:999px;font-size:12.5px;font-weight:500;border:1px solid rgba(0,240,255,.24);background:rgba(0,240,255,.08);color:var(--teal);text-decoration:none;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-.pill.secondary{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:#cfe5ea}
-
-.empty{text-align:center;padding:60px 20px;color:var(--muted)}
-.spinner{width:22px;height:22px;border:2px solid rgba(0,240,255,.2);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-@media(max-width:380px){.wordmark{font-size:22px;letter-spacing:.38em}}
-
-.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px;max-width:280px;margin-left:auto;margin-right:auto}
-.app-node{display:flex;flex-direction:column;align-items:center;gap:7px;text-decoration:none;cursor:pointer}
-.app-icon{width:52px;height:52px;background:linear-gradient(160deg,rgba(0,240,255,.09),rgba(10,12,20,.7));border:1px solid rgba(0,240,255,.22);border-radius:16px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);box-shadow:0 4px 18px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06);transition:transform .12s}
-.app-icon svg{width:22px;height:22px;stroke:#00F0FF;stroke-width:1.8;filter:drop-shadow(0 0 6px rgba(0,240,255,.4))}
-.app-node:active .app-icon{transform:scale(.92)}
-.app-label{font-size:9px;color:#999;letter-spacing:1.4px;text-transform:uppercase;font-weight:700}
-.app-node:nth-child(2) .app-icon svg{stroke:#A0426E;filter:drop-shadow(0 0 6px rgba(160,66,110,.4))}
-.app-node:nth-child(2) .app-icon{border-color:rgba(160,66,110,.25);background:linear-gradient(160deg,rgba(160,66,110,.09),rgba(10,12,20,.7))}
-.app-node:nth-child(3) .app-icon svg{stroke:#4EADA0}
-.app-node:nth-child(3) .app-icon{border-color:rgba(78,173,160,.25);background:linear-gradient(160deg,rgba(78,173,160,.09),rgba(10,12,20,.7))}
-.app-node:nth-child(4) .app-icon svg{stroke:#C9A84C}
-.app-node:nth-child(4) .app-icon{border-color:rgba(201,168,76,.25);background:linear-gradient(160deg,rgba(201,168,76,.09),rgba(10,12,20,.7))}
-</style>
+        #sanctuary{position:fixed;bottom:-100%;left:0;right:0;height:94%;background:linear-gradient(180deg,#0A0F 0%,#050507 100%);backdrop-filter:blur(40px);border-radius:32px 32px 0 0;z-index:1000;overflow-y:auto;padding:0 0 40px;transition:bottom.45s cubic-bezier(.16,1,.3,1);box-shadow:0 -20px 80px rgba(0,0,0,.8);}
+        #sanctuary.open{bottom:0;}
+       .sanctuary-header{position:sticky;top:0;background:linear-gradient(180deg,rgba(10,10,15,.98) 0%,rgba(10,10,15,0) 100%);padding:18px 24px 20px;backdrop-filter:blur(20px);z-index:2;}
+       .handle{width:44px;height:5px;background:rgba(255,255,255,.18);border-radius:10px;margin:0 auto 22px;}
+       .sanctuary-title-row{display:flex;align-items:center;gap:14px;margin-bottom:8px;}
+       .sanctuary-diamond{width:38px;height:42px;filter:drop-shadow(0 0 12px rgba(0,240,255,.5));}
+       .sanctuary-title{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:#FFF;letter-spacing:-0.5px;}
+       .sanctuary-sub{font-size:14px;color:var(--gold);font-weight:500;line-height:1.5;margin-left:52px;}
+       .sanctuary-body{padding:0 22px;}
+       .community-card{margin:28px 0;background:linear-gradient(135deg,rgba(15,15,22,.9) 0%,rgba(8,8,12,.95) 100%);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:26px 22px;position:relative;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);}
+       .community-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.5),transparent);}
+       .community-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.25);border-radius:20px;padding:5px 12px;margin-bottom:18px;}
+       .community-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite;}
+       .community-badge-text{font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);}
+       .community-headline{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:#FFF;line-height:1.15;margin-bottom:10px;}
+       .community-headline em{font-style:italic;color:var(--gold);font-weight:700;}
+       .community-desc{font-size:13px;color:#AAA;line-height:1.65;margin-bottom:22px;}
+       .community-perks{display:flex;flex-direction:column;gap:12px;margin-bottom:26px;}
+       .perk{display:flex;align-items:flex-start;gap:12px;}
+       .perk-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,.08);}
+       .perk-text{font-size:13px;color:#CCC;line-height:1.5;}
+       .perk-text strong{color:#FFF;font-weight:700;}
+       .pricing-row{display:flex;align-items:baseline;gap:8px;margin-bottom:20px;}
+       .price-main{font-family:'Playfair Display',serif;font-size:48px;font-weight:900;color:#FFF;line-height:1;}
+       .price-period{font-size:14px;color:#888;margin-left:2px;}
+       .price-orig{font-size:12px;color:#666;text-decoration:line-through;margin-left:8px;}
+       .btn-join{width:100%;padding:18px;background:linear-gradient(135deg,var(--gold) 0%,#B8963A 100%);color:#000;border:none;border-radius:16px;font-size:14px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;cursor:pointer;margin-bottom:12px;box-shadow:0 8px 24px rgba(201,168,76,.25),inset 0 1px 0 rgba(255,255,255,.2);transition:transform.1s;}
+       .btn-join:active{transform:scale(.98);}
+       .btn-demo{width:100%;padding:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:14px;color:#DDD;font-size:13px;font-weight:600;cursor:pointer;}
+       .community-footnote{text-align:center;font-size:11px;color:#777;margin-top:16px;line-height:1.5;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    </style>
 </head>
 <body>
-<div class="bg"></div>
-<main>
-  <section id="home-view" class="view active">
-    <div class="hero">
-      <div class="diamond-halo"></div>
-      <svg class="diamond-svg" viewBox="0 0 112 136" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <g stroke="#00F0FF" stroke-opacity="0.95">
-          <path d="M56 0L98 36L56 132L14 36L56 0Z" stroke-width="1.4"/>
-          <path d="M14 36H98" stroke-width="1.1"/>
-          <path d="M56 0V132" stroke-width="1.1"/>
-          <path d="M14 36L56 56L98 36" stroke-width="1"/>
-          <path d="M14 36L42 74L56 56" stroke-width=".8" opacity=".8"/>
-          <path d="M98 36L70 74L56 56" stroke-width=".8" opacity=".8"/>
-          <path d="M42 74L56 132L70 74" stroke-width=".85" opacity=".85"/>
-          <path d="M56 56L56 132" stroke-width=".7" opacity=".6"/>
-        </g>
-        <g stroke="#00F0FF" stroke-opacity=".55" stroke-width=".6">
-          <path d="M56 0L42 74M56 0L70 74M14 36L70 74M98 36L42 74M56 56L14 36M56 56L98 36"/>
-        </g>
-      </svg>
+<div id="home-view">
+    <div class="brand-row">
+        <svg class="cut-diamond brand-diamond" viewBox="0 0 52 58" width="38" height="42"><defs><linearGradient id="b-ts" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#fff" stop-opacity=".98"/><stop offset="100%" stop-color="#b8dcf4" stop-opacity=".85"/></linearGradient></defs><polygon points="15,7 37,7 26,16" fill="url(#b-ts)"/><polygon points="15,7 26,16 10,22" fill="#c8e8f8" opacity=".88"/><polygon points="26,16 37,7 42,22" fill="#90b8d8" opacity=".78"/><polygon points="2,22 10,22 26,56" fill="#183048"/><polygon points="10,22 42,22 26,33" fill="#0c1e30"/><polygon points="42,22 50,22 26,56" fill="#305070"/></svg>
+        <h1 class="brand">Aura</h1>
     </div>
-    <h1 class="wordmark">SAPPHIRE</h1>
-    <p class="tag">Private Search • No Tracking</p>
-    
-    <div class="search-wrap">
-      <div class="search-bar">
-        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Search the untangled web…" autocomplete="off" spellcheck="false">
-        <button class="search-go" id="go" aria-label="Search">
-          <svg fill="none" viewBox="0 0 24 24"><path d="M5 12h12M13 6l6 6-6 6"/></svg>
-        </button>
-      </div>
+    <p class="tagline">The web browser tailored to women.</p>
+    <div class="waitlist">
+        <p class="waitlist-label">Private Invitation</p>
+        <p class="waitlist-desc">Request access to the world's first AI-powered search browser for women.</p>
+        <div class="input-row"><input type="email" class="email-input" id="email-input" placeholder="Your email"><button class="btn-submit" id="submit-btn" onclick="handleSignup()">Request</button></div>
+        <div class="live-count"><div class="count-dot"></div><span class="count-num" id="count-num">2,847</span><span class="count-label">Seeking Sanctuary</span></div>
+        <div class="app-grid">
+            <a class="app-node" onclick="openReader({title:'S-Web',desc:'Private search',url:'https://duckgo.com',domain:'duckduckgo.com',id:'00'})"><div class="app-icon"><i data-lucide="globe"></i></div><span class="app-label">S-Web</span></a>
+            <a class="app-node" onclick="openReader({title:'S-Mail',desc:'Encrypted',url:'https://mail.proton.me',domain:'proton.me',id:'00'})"><div class="app-icon"><i data-lucide="mail"></i></div><span class="app-label">S-Mail</span></a>
+            <a class="app-node" onclick="openReader({title:'S-Maps',desc:'Private maps',url:'https://openstreetmap.org',domain:'openstreetmap.org',id:'00'})"><div class="app-icon"><i data-lucide="map"></i></div><span class="app-label">S-Maps</span></a>
+            <a class="app-node" onclick="openReader({title:'S-Shop',desc:'Curated',url:'https://etsy.com',domain:'etsy.com',id:'00'})"><div class="app-icon"><i data-lucide="shopping-bag"></i></div><span class="app-label">S-Shop</span></a>
+        </div>
     </div>
-    
-    <div class="live-count"><span class="live-dot"></span><span id="liveNum">1,284</span> searches today</div>
-    <div class="app-grid">
-      <a class="app-node" onclick="openReader({title:'S-Web · Secure',desc:'Private search',url:'https://duckduckgo.com',domain:'duckduckgo.com',id:'00'})"><div class="app-icon"><i data-lucide="globe"></i></div><span class="app-label">S-Web</span></a>
-      <a class="app-node" onclick="openReader({title:'S-Mail · Private',desc:'Encrypted email',url:'https://mail.proton.me',domain:'proton.me',id:'00'})"><div class="app-icon"><i data-lucide="mail"></i></div><span class="app-label">S-Mail</span></a>
-      <a class="app-node" onclick="openReader({title:'S-Maps · Navigate',desc:'Privacy maps',url:'https://www.openstreetmap.org',domain:'openstreetmap.org',id:'00'})"><div class="app-icon"><i data-lucide="map"></i></div><span class="app-label">S-Maps</span></a>
-      <a class="app-node" onclick="openReader({title:'S-Shop · Curated',desc:'Women-owned',url:'https://www.etsy.com',domain:'etsy.com',id:'00'})"><div class="app-icon"><i data-lucide="shopping-bag"></i></div><span class="app-label">S-Shop</span></a>
-    </div>
+</div>
 
-    <div class="foot">SAPPHIRE v2.1 • zero logs • open web</div>
-  </section>
+<div id="search-view"><div class="hud-bar"><div class="hud-back" onclick="closeSearch()">←</div><div class="hud-query-display" id="hud-query-text">AURA // UNTANGLE THE WEB</div></div><div class="cards-viewport" id="cards-viewport"></div></div>
+<div id="reader-view"><div class="reader-bar"><div class="reader-back" onclick="closeReader()">←</div><div class="reader-title-bar" id="reader-title-bar"></div></div><div class="reader-content" id="reader-content"></div></div>
 
-  <section id="results-view" class="view">
-    <div class="results-head">
-      <button class="back-btn" onclick="showHome()" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <div>
-        <div class="results-title">Results for</div>
-        <div id="resultsQuery" style="font-weight:600;margin-top:2px"></div>
-      </div>
-    </div>
-    <div id="results" class="results-list"></div>
-  </section>
+<nav id="bottom-nav">
+    <div class="tabs"><div class="tab active">Web</div><div class="tab">AI</div><div class="tab">Beauty</div><div class="tab">Shopping</div><div class="tab">Health</div></div>
+    <div class="search-row"><div class="search-bar"><input id="search-input" placeholder="Ask Aura..."><span class="ai-badge" id="ai-badge">● AI</span></div><div class="diamond-btn" id="diamond-btn"><svg class="cut-diamond" viewBox="0 0 52 58" width="30" height="34"><polygon points="15,7 37,7 26,16" fill="#fff"/><polygon points="2,22 10,22 26,56" fill="#183048"/><polygon points="42,22 50,22 26,56" fill="#305070"/></svg></div></div>
+</nav>
+<div id="nav-pullup"></div>
 
-  <section id="reader-view" class="view">
-    <div class="reader-head">
-      <button class="back-btn" onclick="closeReader()" aria-label="Back">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-      </button>
-      <div class="reader-title" id="readerTitle"></div>
+<div id="sanctuary">
+    <div class="sanctuary-header">
+        <div class="handle"></div>
+        <div class="sanctuary-title-row">
+            <svg class="sanctuary-diamond" viewBox="0 0 52 58"><polygon points="15,7 37,7 26,16" fill="#fff" opacity=".95"/><polygon points="15,7 26,16 10,22" fill="#c8e8f8"/><polygon points="26,16 37,7 42,22" fill="#90b8d8"/><polygon points="2,22 10,22 26,56" fill="#0a1a2a"/><polygon points="10,22 42,22 26,33" fill="#050a14"/><polygon points="42,22 50,22 26,56" fill="#142838"/></svg>
+            <h2 class="sanctuary-title">Diamond Sanctuary</h2>
+        </div>
+        <p class="sanctuary-sub">We're not just AI powered,<br>we're empowering women.</p>
     </div>
-    <div class="reader-meta" id="readerMeta"></div>
-    <div class="reader-actions">
-      <a id="openOriginal" class="pill" target="_blank" rel="noopener">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Open Source
-      </a>
-      <button class="pill secondary" onclick="copyLink()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-        Copy Link
-      </button>
+    <div class="sanctuary-body">
+        <div class="community-card">
+            <div class="community-badge"><div class="community-badge-dot"></div><span class="community-badge-text">DEMO ACCESS · LIMITED SPOTS</span></div>
+            <h3 class="community-headline">Join the <em>Founding Circle</em></h3>
+            <p class="community-desc">Get early access to the full Aura experience — AI search, private vaults, safety systems, and an exclusive community of women building the future together.</p>
+            <div class="community-perks">
+                <div class="perk"><div class="perk-icon">💎</div><div class="perk-text"><strong>Full Aura Browser</strong> — early access before public launch</div></div>
+                <div class="perk"><div class="perk-icon">🛡️</div><div class="perk-text"><strong>All Shield Systems</strong> — anti-stalking, harassment filter, date mode</div></div>
+                <div class="perk"><div class="perk-icon">✨</div><div class="perk-text"><strong>Private Community</strong> — founding member badge + exclusive events</div></div>
+                <div class="perk"><div class="perk-icon">🔒</div><div class="perk-text"><strong>Lock in founding price</strong> — never pay more as we grow</div></div>
+            </div>
+            <div class="pricing-row"><span class="price-main">$4</span><span class="price-period">/month</span><span class="price-orig">$12/mo after launch</span></div>
+            <button class="btn-join" onclick="handleJoin()">✦ JOIN THE FOUNDING CIRCLE</button>
+            <button class="btn-demo" onclick="closePanel()">Try the Demo First — Free</button>
+            <p class="community-footnote">Cancel anytime · No commitment · Secure checkout<br>Your data is yours. Always.</p>
+        </div>
     </div>
-    <div id="readerContent" style="color:#cfe6eb;line-height:1.65;font-size:15px">
-      Sapphire strips clutter and loads the essential content privately. Open the source to read full article.
-    </div>
-  </section>
-</main>
+</div>
 
 <script>
-const $ = s => document.querySelector(s);
-const homeView = $('#home-view');
-const resultsView = $('#results-view');
-const readerView = $('#reader-view');
-const q = $('#q');
-const go = $('#go');
-const resultsEl = $('#results');
-const resultsQuery = $('#resultsQuery');
-let currentReader = null;
+let db; try{db=supabase.createClient('https://inkvqoerebpxozxwogmj.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlua3Zxb2VyZWJweG96eHdvZ21qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzOTM2MTQsImV4cCI6MjA5MTk2OTYxNH0.lZzUdD2bbtUoaDNRoSmKHL03cJ4An3Xt-8WBelHlcQQ')}catch(e){}
+const homeView=document.getElementById('home-view'),searchView=document.getElementById('search-view'),cardsViewport=document.getElementById('cards-viewport'),hudQueryText=document.getElementById('hud-query-text'),searchInput=document.getElementById('search-input'),panel=document.getElementById('sanctuary'),diamondBtn=document.getElementById('diamond-btn'),nav=document.getElementById('bottom-nav'),navPullup=document.getElementById('nav-pullup');
 
-// Physics-like search interaction
-let searchVelocity = 0;
-q.addEventListener('input', () => {
-  searchVelocity = Math.min(1, q.value.length / 12);
-  $('.diamond-svg').style.filter = `drop-shadow(0 0 ${28 + searchVelocity*12}px rgba(0,240,255,${.4+searchVelocity*.2}))`;
-});
-q.addEventListener('blur', ()=>{$('.diamond-svg').style.filter='';});
+function openPanel(){panel.classList.add('open');homeView.classList.add('blurred');}
+function closePanel(){panel.classList.remove('open');homeView.classList.remove('blurred');}
+diamondBtn.onclick=openPanel;
 
-function showHome(){
-  homeView.classList.add('active');
-  resultsView.classList.remove('active');
-  readerView.classList.remove('active');
-  q.value=''; q.focus();
-}
-function showResults(query){
-  homeView.classList.remove('active');
-  readerView.classList.remove('active');
-  resultsView.classList.add('active');
-  resultsQuery.textContent = `"${query}"`;
+function hideNav(){nav.style.transform='translateY(120%)';navPullup.style.pointerEvents='all';navPullup.style.opacity='1';}
+function showNav(){nav.style.transform='translateY(0)';navPullup.style.pointerEvents='none';navPullup.style.opacity='0';}
+
+async function fetchSearchResults(q){
+    const getDomain=u=>{try{return new URL(u).hostname.replace('www.','')}catch{return''}};
+    const wiki=fetch(`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(q)}&gsrlimit=2&prop=extracts&exintro&explaintext&exsentences=2&format=json&origin=*`).then(r=>r.json()).then(d=>d.query?Object.values(d.query.pages).map(p=>({id:'W'+p.pageid,title:p.title,desc:p.extract,url:`https://en.wikipedia.org/wiki/${p.title.replace(/ /g,'_')}`,domain:'wikipedia.org'})):[]).catch(()=>[]);
+    const web=fetch('https://google.serper.dev/search',{method:'POST',headers:{'X-API-KEY':'bdb6eaaf192f22e8f9a6280fe9848c961bdaefa8','Content-Type':'application/json'},body:JSON.stringify({q,num:8})}).then(r=>r.json()).then(d=>(d.organic||[]).map((r,i)=>({id:String(i+1).padStart(2,'0'),title:r.title,desc:r.snippet,url:r.link,domain:getDomain(r.link)}))).catch(()=>[]);
+    const [w,s]=await Promise.all([wiki,web]); const seen=new Set(); return [...w,...s].filter(r=>r.url&&!seen.has(r.domain)&&seen.add(r.domain)).slice(0,9);
 }
 
-async function doSearch(){
-  const query = q.value.trim();
-  if(!query) return;
-  showResults(query);
-  resultsEl.innerHTML = `<div class="empty"><div class="spinner"></div>Searching untangled web…</div>`;
-  
-  // search physics burst
-  document.querySelector('.diamond-halo').style.transform='scale(1.2)';
-  setTimeout(()=>document.querySelector('.diamond-halo').style.transform='', 300);
-  
-  try{
-    const items = await fetchSearchResults(query);
-    if(!items.length) throw new Error('NO_RESULTS');
-    resultsEl.innerHTML = items.map(item => `
-      <article class="res-card" data-id="${item.id}">
-        <div class="res-id">${item.id}</div>
-        <h3>${item.title}</h3>
-        <p>${item.desc}</p>
-        <div class="res-domain">${item.domain} • ${item.source==='wiki'?'wiki':'web'}</div>
-      </article>
-    `).join('');
-    resultsEl.querySelectorAll('.res-card').forEach((el,i)=>{
-      el.addEventListener('click',()=>openReader(items[i]));
-    });
-  }catch(e){
-    resultsEl.innerHTML = `<div class="empty">No results. Try different terms.</div>`;
-  }
+async function runSearch(q){
+    if(!q.trim())return; homeView.classList.add('hidden'); searchView.classList.add('visible'); hideNav(); hudQueryText.textContent=`AURA // "${q.toUpperCase()}"`; cardsViewport.innerHTML='<div class="hud-loading" style="margin:auto">SCANNING...</div>';
+    try{
+        const results=await fetchSearchResults(q); cardsViewport.innerHTML='';
+        results.forEach(d=>{const c=document.createElement('div');c.className='tactical-card';c.innerHTML=`<div class="card-telemetry">${d.id.startsWith('W')?'WIKI':'OBJ'}_${d.id} // SECURE</div><div class="card-title">${d.title}</div><div class="card-body">${d.desc?.substring(0,140)||''}</div><div class="card-url">${d.domain}</div><div class="card-footer">TAP TO ENGAGE →</div>`;c.onclick=()=>openReader(d);cardsViewport.appendChild(c);});
+        requestAnimationFrame(()=>{applyParallax();setTimeout(applyParallax,50);});
+    }catch(e){cardsViewport.innerHTML='<div class="hud-loading" style="margin:auto">NO SIGNAL</div>';}
 }
+function closeSearch(){searchView.classList.remove('visible');homeView.classList.remove('hidden');searchInput.value='';showNav();hudQueryText.textContent='AURA // UNTANGLE THE WEB';}
+searchInput.onkeydown=e=>{if(e.key==='Enter'){runSearch(searchInput.value)}};
+document.getElementById('ai-badge').onclick=()=>runSearch(searchInput.value);
 
-function openReader(data){
-  currentReader = data;
-  readerView.classList.add('active');
-  resultsView.classList.remove('active');
-  homeView.classList.remove('active');
-  $('#readerTitle').textContent = data.title;
-  $('#readerMeta').textContent = `${data.domain} • ID ${data.id}`;
-  $('#openOriginal').href = data.url;
-  $('#readerContent').innerHTML = `<p style="margin-bottom:12px;opacity:.9">${data.desc}</p><p style="font-size:13px;color:#8aa;">Sapphire Reader removes trackers, ads, and paywalls where possible. This is a privacy preview — open source for full content.</p>`;
-  window.scrollTo(0,0);
+function applyParallax(){
+    const cards=cardsViewport.querySelectorAll('.tactical-card'); const isP=innerHeight>innerWidth; const center=isP?innerHeight/2:innerWidth/2;
+    cards.forEach(card=>{const r=card.getBoundingClientRect(); const c=isP?r.top+r.height/2:r.left+r.width/2; const rot=Math.max(-25,Math.min(25,((c-center)/center)*25)); card.style.transform=isP?`perspective(1200px) rotateX(${-rot}deg) translateZ(0)`:`perspective(1200px) rotateY(${rot}deg) translateZ(0)`;});
 }
-function closeReader(){
-  readerView.classList.remove('active');
-  if(resultsEl.children.length) resultsView.classList.add('active');
-  else showHome();
-}
-function copyLink(){
-  if(!currentReader) return;
-  navigator.clipboard.writeText(currentReader.url).then(()=>{
-    const b = event.target.closest('.pill');
-    const t = b.innerHTML;
-    b.innerHTML = '✓ Copied';
-    setTimeout(()=>b.innerHTML=t,1200);
-  });
-}
+cardsViewport.addEventListener('scroll',()=>{requestAnimationFrame(applyParallax)},{passive:true});
+window.addEventListener('orientationchange',()=>setTimeout(applyParallax,300));
 
-async function fetchSearchResults(query) {
-    const getDomain = url => { try { return new URL(url).hostname.replace('www.',''); } catch { return ''; } };
-    
-    // Wikipedia - FREE, no key, CORS enabled
-    const wikiPromise = fetch(`https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=3&prop=extracts|pageimages&exintro&explaintext&exsentences=2&pithumbsize=200&format=json&origin=*`)
-        .then(r => r.json())
-        .then(d => {
-            if (!d.query?.pages) return [];
-            return Object.values(d.query.pages).map(p => ({
-                id: 'W' + p.pageid,
-                title: p.title,
-                desc: p.extract || 'Wikipedia article',
-                url: `https://en.wikipedia.org/wiki/${encodeURIComponent(p.title.replace(/ /g,'_'))}`,
-                domain: 'wikipedia.org',
-                source: 'wiki'
-            }));
-        }).catch(() => []);
+const readerView=document.getElementById('reader-view'),readerContent=document.getElementById('reader-content'),readerTitle=document.getElementById('reader-title-bar');
+function openReader(d){hideNav();readerView.classList.add('visible');readerTitle.textContent=d.title.toUpperCase();readerContent.innerHTML=`<iframe src="${d.url}" style="width:100%;height:100%;border:none;background:#fff" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`;}
+function closeReader(){readerView.classList.remove('visible');if(!searchView.classList.contains('visible'))showNav();}
 
-    // Serper (your existing)
-    const serperPromise = fetch('https://google.serper.dev/search', {
-        method: 'POST',
-        headers: {'X-API-KEY': 'bdb6eaaf192f22e8f9a6280fe9848c961bdaefa8','Content-Type': 'application/json'},
-        body: JSON.stringify({ q: query, num: 10 }),
-        signal: AbortSignal.timeout(10000)
-    }).then(r => r.ok ? r.json() : {}).then(data => (data.organic || []).map((r,i) => ({
-        id: String(i+1).padStart(2,'0'),
-        title: r.title,
-        desc: r.snippet || r.title,
-        url: r.link,
-        domain: getDomain(r.link),
-        source: 'web'
-    }))).catch(() => []);
+let startY=0;
+navPullup.addEventListener('touchstart',e=>{startY=e.touches[0].clientY},{passive:true});
+navPullup.addEventListener('touchmove',e=>{if(startY-e.touches[0].clientY>30){showNav();if(searchView.classList.contains('visible'))closeSearch();}},{passive:true});
+navPullup.addEventListener('click',()=>{showNav();if(searchView.classList.contains('visible'))closeSearch();});
 
-    const [wiki, web] = await Promise.all([wikiPromise, serperPromise]);
-    const seen = new Set();
-    const merged = [];
-    [...wiki, ...web].forEach(r => {
-        if (r.url && !seen.has(r.domain)) { seen.add(r.domain); merged.push(r); }
-    });
-    if (merged.length === 0) throw new Error('NO_RESULTS');
-    return merged.slice(0,10);
-}
-
-go.addEventListener('click', doSearch);
-q.addEventListener('keydown', e=>{ if(e.key==='Enter') doSearch(); });
-
-// live count physics
-const liveNum = $('#liveNum');
-let count = 1284;
-setInterval(()=>{
-  count += Math.floor(Math.random()*3);
-  liveNum.textContent = count.toLocaleString();
-  liveNum.style.textShadow = '0 0 12px rgba(0,240,255,.7)';
-  setTimeout(()=>liveNum.style.textShadow='', 400);
-}, 4200);
-
-window.addEventListener('load', ()=>{
-  q.focus();
-  // diamond idle physics
-  let t=0;
-  setInterval(()=>{
-    t+=0.015;
-    const d = document.querySelector('.diamond-halo');
-    if(d) d.style.opacity = 0.75 + Math.sin(t)*0.15;
-  },50);
-  if(window.lucide) lucide.createIcons();
-});
-
-// swipe back
-let touchStartX=0;
-document.addEventListener('touchstart',e=>touchStartX=e.touches[0].clientX,{passive:true});
-document.addEventListener('touchend',e=>{
-  const dx = e.changedTouches[0].clientX - touchStartX;
-  if(dx>70){
-    if(readerView.classList.contains('active')) closeReader();
-    else if(resultsView.classList.contains('active')) showHome();
-  }
-});
+function handleSignup(){const i=document.getElementById('email-input'),b=document.getElementById('submit-btn'),e=i.value.trim();if(!e.includes('@'))return;i.focus();b.textContent='...';setTimeout(()=>{b.textContent='Secured ✓';b.style.color='var(--teal)';i.disabled=true;localStorage.setItem('aura','1')},600);}
+function handleJoin(){window.open('https://buy.stripe.com/test','_blank')}
+window.addEventListener('load',()=>{if(window.lucide)lucide.createIcons();if(localStorage.getItem('aura')){document.getElementById('submit-btn').textContent='Secured ✓';document.getElementById('email-input').disabled=true;}});
 </script>
 </body>
 </html>
